@@ -43,4 +43,59 @@ class InstitutionService {
       return null;
     }
   }
+
+  Future<bool> updateInstitution(String token, int institutionId, Map<String, dynamic> institutionData) async {
+    final url = Uri.parse('$baseUrl/user/nros/$institutionId');
+    final response = await http.put(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(institutionData),
+    );
+
+    if (response.statusCode == 200) { // 200 OK
+      return true;
+    } else {
+      print('Error al actualizar la institución: ${response.statusCode} - ${response.body}');
+      return false;
+    }
+  }
+
+  Future<bool> deactivateInstitution(String token, int institutionId) async {
+    final url = Uri.parse('$baseUrl/nros/$institutionId/deactivate');
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) { // 200 OK
+      return true;
+    } else {
+      print('Error al desactivar la institución: ${response.statusCode} - ${response.body}');
+      return false;
+    }
+  }
+
+  Future<bool> activateInstitution(String token, int institutionId) async {
+    final url = Uri.parse('$baseUrl/nros/$institutionId/activate');
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) { // 200 OK
+      return true;
+    } else {
+      print('Error al activar la institución: ${response.statusCode} - ${response.body}');
+      return false;
+    }
+  }
 }

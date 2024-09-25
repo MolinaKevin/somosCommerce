@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class Tab1 extends StatelessWidget {
+class TabInstitution1 extends StatelessWidget {
   final Map<String, dynamic> entity;
 
-  Tab1({required this.entity});
+  TabInstitution1({required this.entity});
 
   void _showNfcPopup(BuildContext context) {
     showDialog(
@@ -12,7 +12,7 @@ class Tab1 extends StatelessWidget {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Transacción NFC'),
+          title: Text('Transacción Institution NFC'),
           content: Row(
             children: [
               CircularProgressIndicator(),
@@ -38,7 +38,7 @@ class Tab1 extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Transacción por QR'),
+          title: Text('Transacción aass por QR'),
           content: Text('Actualmente no está disponible.'),
           actions: <Widget>[
             TextButton(
@@ -72,12 +72,12 @@ class Tab1 extends StatelessWidget {
             ),
             SizedBox(height: 40), // Espacio entre el texto y los botones
             CupertinoButton.filled(
-              child: Text('Transacción NFC'),
+              child: Text('Transacción Insti NFC'),
               onPressed: () => _showNfcPopup(context),
             ),
             SizedBox(height: 20),
             CupertinoButton.filled(
-              child: Text('Transacción por QR'),
+              child: Text('Transacción Insti por QR'),
               onPressed: () => _showQrUnavailablePopup(context),
             ),
           ],

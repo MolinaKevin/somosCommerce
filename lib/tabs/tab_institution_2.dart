@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../services/commerce_movement_service.dart';
+import '../services/institution_movement_service.dart';
 import '../services/auth_service.dart';
 
-class Tab2 extends StatefulWidget {
+class TabInstitution2 extends StatefulWidget {
   final Map<String, dynamic> entity;
 
-  Tab2({required this.entity});
+  TabInstitution2({required this.entity});
 
   @override
-  _Tab2State createState() => _Tab2State();
+  _TabInstitution2State createState() => _TabInstitution2State();
 }
 
-class _Tab2State extends State<Tab2> {
+class _TabInstitution2State extends State<TabInstitution2> {
   String selectedFilter = 'all';
   List<Map<String, dynamic>> movements = [];
   bool isLoading = true;
@@ -29,15 +29,13 @@ class _Tab2State extends State<Tab2> {
       final token = await authService.getToken();
 
       if (token != null) {
-        final purchases = await CommerceMovementService().fetchPurchases(token, widget.entity['id']);
-        final donations = await CommerceMovementService().fetchDonations(token, widget.entity['id']);
-        final cashouts = await CommerceMovementService().fetchCashouts(token, widget.entity['id']);
+        final donationsReceived = await InstitutionMovementService().fetchDonations(token, widget.entity['id']);
+        final contributionsMade = await InstitutionMovementService().fetchContributions(token, widget.entity['id']);
 
         setState(() {
           movements = [
-            ...purchases.map((purchase) => {...purchase, 'type': 'purchase'}),
-            ...donations.map((donation) => {...donation, 'type': 'donation'}),
-            ...cashouts.map((cashout) => {...cashout, 'type': 'cashout'}),
+            ...donationsReceived.map((donation) => {...donation, 'type': 'donation_received'}),
+            ...contributionsMade.map((contribution) => {...contribution, 'type': 'contribution_made'}),
           ];
 
           // Ordenar los movimientos por fecha (created_at)
@@ -78,19 +76,16 @@ class _Tab2State extends State<Tab2> {
 
   Color _getBackgroundColor(String type) {
     switch (type) {
-      case 'purchase':
-        return Colors.blue.shade50;
-      case 'donation':
+      case 'donation_received':
         return Colors.green.shade50;
-      case 'cashout':
-        return Colors.red.shade50;
+      case 'contribution_made':
+        return Colors.blue.shade50;
       default:
         return Colors.grey.shade50;
     }
   }
 
   String _getMovementDescription(Map<String, dynamic> movement) {
-    // Parsear la fecha si existe
     String formatDate(String? date) {
       if (date == null) return 'N/A';
       try {
@@ -102,46 +97,30 @@ class _Tab2State extends State<Tab2> {
     }
 
     switch (movement['type']) {
-      case 'purchase':
-        return 'Pass: ${movement['user_pass'] ?? 'N/A'}\nFecha: ${formatDate(movement['created_at'])}';
-      case 'donation':
-        return 'Donación a: ${movement['donation_number'] ?? 'N/A'}\nFecha: ${formatDate(movement['created_at'])}';
-      case 'cashout':
-        return 'Fecha de retiro: ${formatDate(movement['created_at'])}';
+      case 'donation_received':
+        return 'Donación de: ${movement['donor_name'] ?? 'N/A'}\nFecha: ${formatDate(movement['created_at'])}';
+      case 'contribution_made':
+        return 'Contribución a: ${movement['recipient_name'] ?? 'N/A'}\nFecha: ${formatDate(movement['created_at'])}';
       default:
         return 'Sin descripción';
     }
   }
 
+  String _getAmountOrPoints(Map<String, dynamic> movement) {
+    return 'Puntos: ${movement['points'] ?? 0}';
+  }
 
   Widget _buildMovementItem(Map<String, dynamic> movement) {
-    bool isPaid;
-
-    // Si el valor es int, lo convertimos a bool
-    if (movement['is_paid'] is int) {
-      isPaid = movement['is_paid'] == 1;
-    } else {
-      isPaid = movement['is_paid'] ?? false; // Asume false si es null
-    }
-
     return Container(
       color: _getBackgroundColor(movement['type']),
       child: ListTile(
         title: Text(_getMovementDescription(movement)),
         subtitle: Text(_getAmountOrPoints(movement)),
-        trailing: isPaid
+        trailing: movement['is_paid'] == 1
             ? Icon(Icons.check_circle, color: Colors.green)
             : Icon(Icons.cancel, color: Colors.red),
       ),
     );
-  }
-
-  String _getAmountOrPoints(Map<String, dynamic> movement) {
-    if (movement['type'] == 'purchase') {
-      return 'Monto: ${movement['amount'] ?? 0}';
-    } else {
-      return 'Puntos: ${movement['points'] ?? 0}';
-    }
   }
 
   @override
@@ -150,7 +129,7 @@ class _Tab2State extends State<Tab2> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Movimientos del Comercio'),
+        title: Text('Movimientos de la Institución'),
       ),
       body: Column(
         children: [
@@ -169,26 +148,18 @@ class _Tab2State extends State<Tab2> {
                     },
                   ),
                   TextButton(
-                    child: Text('Compras'),
+                    child: Text('Donaciones Recibidas'),
                     onPressed: () {
                       setState(() {
-                        selectedFilter = 'purchase';
+                        selectedFilter = 'donation_received';
                       });
                     },
                   ),
                   TextButton(
-                    child: Text('Donaciones'),
+                    child: Text('Contribuciones Realizadas'),
                     onPressed: () {
                       setState(() {
-                        selectedFilter = 'donation';
-                      });
-                    },
-                  ),
-                  TextButton(
-                    child: Text('Closures'),
-                    onPressed: () {
-                      setState(() {
-                        selectedFilter = 'cashout';
+                        selectedFilter = 'contribution_made';
                       });
                     },
                   ),

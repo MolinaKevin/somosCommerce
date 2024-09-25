@@ -7,6 +7,7 @@ import 'create_commerce_screen.dart';
 import 'create_nro_screen.dart';
 import 'login_screen.dart';
 import '../edit_page.dart';
+import '../edit_institution_page.dart';
 
 class BusinessInstitutionScreen extends StatefulWidget {
   @override
@@ -118,12 +119,24 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
                               icon: Icon(Icons.edit, color: Colors.blue),
                               label: Text('Editar'),
                               onPressed: () {
-                                Navigator.of(context).push(
+                                if (_selectedSegment == 0) {
+                                  // Es un comercio
+                                  Navigator.of(context).push(
                                     CupertinoPageRoute(
                                       builder: (context) => EditPage(entity: item),
                                     ),
                                   );
+                                } else {
+                                  // Es una institución
+                                  print('selectedSegment: $_selectedSegment');
+                                  Navigator.of(context).push(
+                                    CupertinoPageRoute(
+                                      builder: (context) => EditInstitutionPage(entity: item),
+                                    ),
+                                  );
+                                }
                               },
+
                             ),
                             ElevatedButton.icon(
                               icon: Icon(
