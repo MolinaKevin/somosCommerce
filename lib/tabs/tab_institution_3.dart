@@ -1,12 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import '../services/auth_service.dart';
 import '../services/institution_service.dart';
-import '../services/somos_service.dart'; // Importar SomosService
+import '../services/somos_service.dart';
 import '../screens/map_screen.dart';
+import 'sub_tabs/avatar_section.dart';
+import 'sub_tabs/background_image_carousel.dart';
+import 'sub_tabs/time_picker_section.dart';
+import 'package:flutter/services.dart';
 
 class TabInstitution3 extends StatefulWidget {
   final Map<String, dynamic> entity;
@@ -14,10 +18,10 @@ class TabInstitution3 extends StatefulWidget {
   TabInstitution3({required this.entity});
 
   @override
-  _Tab3State createState() => _Tab3State();
+  _TabInstitution3State createState() => _TabInstitution3State();
 }
 
-class _Tab3State extends State<TabInstitution3> {
+class _TabInstitution3State extends State<TabInstitution3> {
   final _formKey = GlobalKey<FormState>();
 
   // Controladores para los campos de texto
@@ -28,20 +32,22 @@ class _Tab3State extends State<TabInstitution3> {
   late TextEditingController _latitudeController;
   late TextEditingController _longitudeController;
   late TextEditingController _avatarController;
-  late TextEditingController _backgroundImageController;
   late TextEditingController _percentController;
 
-  String? _selectedSomos; // Controlador para el "Somos" seleccionado
-  List<Map<String, dynamic>> somosOptions = []; // Lista de opciones de "Somos"
+  String? _selectedSomos;
+  List<Map<String, dynamic>> somosOptions = [];
+
+  List<String> _backgroundImages = [];
+  int _currentBackgroundIndex = 0;
 
   TimeOfDay? _openingTime;
   TimeOfDay? _closingTime;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
 
-    // Inicializar los controladores con los datos de la institución existente
     _nameController = TextEditingController(text: widget.entity['name']);
     _addressController = TextEditingController(text: widget.entity['address']);
     _cityController = TextEditingController(text: widget.entity['city']);
@@ -49,14 +55,14 @@ class _Tab3State extends State<TabInstitution3> {
     _latitudeController = TextEditingController(text: widget.entity['latitude'].toString());
     _longitudeController = TextEditingController(text: widget.entity['longitude'].toString());
     _avatarController = TextEditingController(text: widget.entity['avatar']);
-    _backgroundImageController = TextEditingController(text: widget.entity['background_image']);
     _percentController = TextEditingController(text: widget.entity['percent']?.toString() ?? '');
-    _selectedSomos = widget.entity['somos_id']?.toString();
 
+    _selectedSomos = widget.entity['somos_id']?.toString();
+    _backgroundImages.add(widget.entity['background_image']);
     _openingTime = _parseTime(widget.entity['opening_time']);
     _closingTime = _parseTime(widget.entity['closing_time']);
 
-    _loadSomosOptions(); // Cargar las opciones de "Somos"
+    _loadSomosOptions();
   }
 
   Future<void> _loadSomosOptions() async {
@@ -70,8 +76,6 @@ class _Tab3State extends State<TabInstitution3> {
       setState(() {
         somosOptions = options;
       });
-    } else {
-      print('No se pudo obtener el token de autenticación');
     }
   }
 
@@ -83,20 +87,76 @@ class _Tab3State extends State<TabInstitution3> {
     return TimeOfDay.now();
   }
 
-  Future<void> _selectTime(BuildContext context, bool isOpeningTime) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: isOpeningTime ? (_openingTime ?? TimeOfDay.now()) : (_closingTime ?? TimeOfDay.now()),
-    );
-    if (picked != null) {
+  Future<void> _pickImage() async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
       setState(() {
-        if (isOpeningTime) {
-          _openingTime = picked;
-        } else {
-          _closingTime = picked;
-        }
+        _avatarController.text = pickedFile.path;
       });
     }
+  }
+
+  Future<void> _enterAvatarUrl() async {
+    TextEditingController urlController = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Ingresar URL del Avatar'),
+          content: TextField(
+            controller: urlController,
+            decoration: InputDecoration(hintText: 'https://example.com/avatar.png'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _avatarController.text = urlController.text;
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _pickBackgroundImage({required ImageSource source}) async {
+    final XFile? pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _backgroundImages.add(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> _enterBackgroundImageUrl() async {
+    TextEditingController urlController = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Ingresar URL de la Imagen de Fondo'),
+          content: TextField(
+            controller: urlController,
+            decoration: InputDecoration(hintText: 'https://example.com/fondo.png'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _backgroundImages.add(urlController.text);
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _openMap() async {
@@ -129,11 +189,11 @@ class _Tab3State extends State<TabInstitution3> {
         'latitude': _latitudeController.text,
         'longitude': _longitudeController.text,
         'avatar': _avatarController.text,
-        'background_image': _backgroundImageController.text,
+        'background_image': _backgroundImages[_currentBackgroundIndex],
         'percent': double.tryParse(_percentController.text) ?? 0.0,
         'opening_time': _openingTime?.format(context),
         'closing_time': _closingTime?.format(context),
-        'somos_id': _selectedSomos, // Guardar el "Somos" seleccionado
+        'somos_id': _selectedSomos,
       };
 
       final authService = Provider.of<AuthService>(context, listen: false);
@@ -141,9 +201,7 @@ class _Tab3State extends State<TabInstitution3> {
 
       if (token != null) {
         final success = await InstitutionService().updateInstitution(token, widget.entity['id'], institutionData);
-
         if (success) {
-          // Institución actualizada exitosamente
           showDialog(
             context: context,
             builder: (context) {
@@ -161,72 +219,9 @@ class _Tab3State extends State<TabInstitution3> {
               );
             },
           );
-        } else {
-          // Error al actualizar institución
-          showDialog(
-            context: context,
-            builder: (context) {
-              return CupertinoAlertDialog(
-                title: Text('Error'),
-                content: Text('Hubo un problema al actualizar la institución.'),
-                actions: <Widget>[
-                  CupertinoDialogAction(
-                    child: Text('OK'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
         }
-      } else {
-        // No se pudo obtener el token
-        showDialog(
-          context: context,
-          builder: (context) {
-            return CupertinoAlertDialog(
-              title: Text('Error de autenticación'),
-              content: Text('No se pudo obtener el token de autenticación.'),
-              actions: <Widget>[
-                CupertinoDialogAction(
-                  child: Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
       }
     }
-  }
-
-  Widget _buildTextFieldWithLabel({required String label, required TextEditingController controller, bool readOnly = false, TextInputType? keyboardType, List<TextInputFormatter>? inputFormatters}) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 3,
-          child: Text(
-            label,
-            style: TextStyle(fontSize: 14), // Tamaño de fuente más pequeño
-          ),
-        ),
-        Expanded(
-          flex: 7,
-          child: CupertinoTextField(
-            controller: controller,
-            placeholder: label,
-            readOnly: readOnly,
-            keyboardType: keyboardType,
-            inputFormatters: inputFormatters,
-            style: TextStyle(fontSize: 14), // Tamaño de fuente más pequeño
-          ),
-        ),
-      ],
-    );
   }
 
   Widget _buildSomosDropdown() {
@@ -234,10 +229,7 @@ class _Tab3State extends State<TabInstitution3> {
       children: [
         Expanded(
           flex: 3,
-          child: Text(
-            'Somos:',
-            style: TextStyle(fontSize: 14),
-          ),
+          child: Text('Somos:', style: TextStyle(fontSize: 14)),
         ),
         Expanded(
           flex: 7,
@@ -274,6 +266,13 @@ class _Tab3State extends State<TabInstitution3> {
           key: _formKey,
           child: ListView(
             children: [
+              AvatarSection(
+                avatarController: _avatarController,
+                onPickImage: _pickImage,
+                onEnterAvatarUrl: _enterAvatarUrl,
+              ),
+              SizedBox(height: 16),
+
               _buildTextFieldWithLabel(label: 'Nombre:', controller: _nameController),
               SizedBox(height: 16),
               _buildTextFieldWithLabel(label: 'Dirección:', controller: _addressController),
@@ -282,6 +281,7 @@ class _Tab3State extends State<TabInstitution3> {
               SizedBox(height: 16),
               _buildTextFieldWithLabel(label: 'PLZ:', controller: _plzController, keyboardType: TextInputType.number, inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
               SizedBox(height: 16),
+
               Row(
                 children: [
                   Expanded(
@@ -299,81 +299,52 @@ class _Tab3State extends State<TabInstitution3> {
                 ],
               ),
               SizedBox(height: 16),
+
               _buildSomosDropdown(),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: 'Avatar (URL):', controller: _avatarController),
+
+              BackgroundImageCarousel(
+                backgroundImages: _backgroundImages,
+                currentIndex: _currentBackgroundIndex,
+                onAddImage: _pickBackgroundImage,
+                onAddImageUrl: _enterBackgroundImageUrl,
+                onSelectImage: (index) {
+                  setState(() {
+                    _currentBackgroundIndex = index;
+                  });
+                },
+              ),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: 'Imagen de Fondo (URL):', controller: _backgroundImageController),
+
+              _buildTextFieldWithLabel(label: 'Percent:', controller: _percentController, readOnly: true),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: 'Percent:', controller: _percentController, readOnly: true, keyboardType: TextInputType.numberWithOptions(decimal: true), inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
-              SizedBox(height: 16),
-              Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _openingTime != null
-                            ? 'Apertura: ${_openingTime!.format(context)}'
-                            : 'Selecciona hora de apertura',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        child: Text(
-                          'Elegir',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.blue,
-                          ),
-                        ),
-                        onPressed: () => _selectTime(context, true),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _closingTime != null
-                            ? 'Cierre: ${_closingTime!.format(context)}'
-                            : 'Selecciona hora de cierre',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        child: Text(
-                          'Elegir',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.blue,
-                          ),
-                        ),
-                        onPressed: () => _selectTime(context, false),
-                      ),
-                    ],
-                  ),
-                ],
+
+              TimePickerSection(
+                openingTime: _openingTime,
+                closingTime: _closingTime,
+                onSelectOpeningTime: (newTime) {
+                  setState(() {
+                    _openingTime = newTime;
+                  });
+                },
+                onSelectClosingTime: (newTime) {
+                  setState(() {
+                    _closingTime = newTime;
+                  });
+                },
               ),
               SizedBox(height: 20),
+
               CupertinoButton.filled(
-                child: Text('Guardar Cambios', style: TextStyle(fontSize: 14)),
+                child: Text('Guardar Cambios'),
                 onPressed: _saveInstitution,
               ),
+
               if (widget.entity['accepted'] == true)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: CupertinoButton.filled(
-                    child: Text(widget.entity['active'] ? 'Desactivar Institución' : 'Activar Institución', style: TextStyle(fontSize: 14)),
+                    child: Text(widget.entity['active'] ? 'Desactivar Institución' : 'Activar Institución'),
                     onPressed: () async {
                       final authService = Provider.of<AuthService>(context, listen: false);
                       final token = await authService.getToken();
@@ -387,19 +358,6 @@ class _Tab3State extends State<TabInstitution3> {
                           setState(() {
                             widget.entity['active'] = !widget.entity['active'];
                           });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(widget.entity['active']
-                                  ? 'Institución activada'
-                                  : 'Institución desactivada'),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Error al cambiar el estado de la institución'),
-                            ),
-                          );
                         }
                       }
                     },
@@ -409,6 +367,26 @@ class _Tab3State extends State<TabInstitution3> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextFieldWithLabel({required String label, required TextEditingController controller, bool readOnly = false, TextInputType? keyboardType, List<TextInputFormatter>? inputFormatters}) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 3,
+          child: Text(label, style: TextStyle(fontSize: 14)),
+        ),
+        Expanded(
+          flex: 7,
+          child: CupertinoTextField(
+            controller: controller,
+            readOnly: readOnly,
+            keyboardType: keyboardType,
+            inputFormatters: inputFormatters,
+          ),
+        ),
+      ],
     );
   }
 }

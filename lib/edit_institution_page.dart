@@ -9,10 +9,10 @@ class EditInstitutionPage extends StatefulWidget {
   EditInstitutionPage({required this.entity});  // Constructor que acepta un entity
 
   @override
-  _EditPageState createState() => _EditPageState();
+  _EditInstitutionPageState createState() => _EditInstitutionPageState();
 }
 
-class _EditPageState extends State<EditInstitutionPage> {
+class _EditInstitutionPageState extends State<EditInstitutionPage> {
   int _currentIndex = 0;
 
   late List<Widget> _tabs;
@@ -30,36 +30,36 @@ class _EditPageState extends State<EditInstitutionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoTabScaffold(
-      tabBar: CupertinoTabBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.circle),
-            label: 'Tab 1',
+    return CupertinoPageScaffold(
+      child: Column(
+        children: [
+          Expanded(
+            child: _tabs[_currentIndex],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.list_bullet),
-            label: 'Tab 2',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.profile_circled),
-            label: 'Tab 3',
+          CupertinoTabBar(
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.circle),
+                label: 'Tab 1',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.list_bullet),
+                label: 'Tab 2',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.profile_circled),
+                label: 'Tab 3',
+              ),
+            ],
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
           ),
         ],
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
       ),
-      tabBuilder: (BuildContext context, int index) {
-        return CupertinoTabView(
-          builder: (BuildContext context) {
-            return _tabs[index];
-          },
-        );
-      },
     );
   }
 }

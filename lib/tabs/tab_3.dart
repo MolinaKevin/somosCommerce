@@ -1,12 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart'; // Para subir una imagen desde el dispositivo
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:latlong2/latlong.dart';
 import '../services/auth_service.dart';
 import '../services/commerce_service.dart';
 import '../screens/map_screen.dart';
+import 'sub_tabs/avatar_section.dart';
+import 'sub_tabs/background_image_carousel.dart';
+import 'sub_tabs/time_picker_section.dart';
+import 'package:flutter/services.dart';
 
 class Tab3 extends StatefulWidget {
   final Map<String, dynamic> entity;
@@ -30,18 +33,17 @@ class _Tab3State extends State<Tab3> {
   late TextEditingController _avatarController;
   late TextEditingController _percentController;
 
-  List<String> _backgroundImages = []; // Lista de imágenes de fondo
-  int _currentBackgroundIndex = 0; // Índice de la imagen de fondo actual
+  List<String> _backgroundImages = [];
+  int _currentBackgroundIndex = 0;
 
   TimeOfDay? _openingTime;
   TimeOfDay? _closingTime;
-  final ImagePicker _picker = ImagePicker(); // Instancia para seleccionar imágenes
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
 
-    // Inicializar los controladores con los datos del comercio existente
     _nameController = TextEditingController(text: widget.entity['name']);
     _addressController = TextEditingController(text: widget.entity['address']);
     _cityController = TextEditingController(text: widget.entity['city']);
@@ -51,7 +53,7 @@ class _Tab3State extends State<Tab3> {
     _avatarController = TextEditingController(text: widget.entity['avatar']);
     _percentController = TextEditingController(text: widget.entity['percent']?.toString() ?? '');
 
-    _backgroundImages.add(widget.entity['background_image'] ?? ''); // Inicializa la lista de imágenes de fondo
+    _backgroundImages.add(widget.entity['background_image']);
     _openingTime = _parseTime(widget.entity['opening_time']);
     _closingTime = _parseTime(widget.entity['closing_time']);
   }
@@ -62,22 +64,6 @@ class _Tab3State extends State<Tab3> {
       return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
     }
     return TimeOfDay.now();
-  }
-
-  Future<void> _selectTime(BuildContext context, bool isOpeningTime) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: isOpeningTime ? (_openingTime ?? TimeOfDay.now()) : (_closingTime ?? TimeOfDay.now()),
-    );
-    if (picked != null) {
-      setState(() {
-        if (isOpeningTime) {
-          _openingTime = picked;
-        } else {
-          _closingTime = picked;
-        }
-      });
-    }
   }
 
   Future<void> _pickImage() async {
@@ -120,7 +106,7 @@ class _Tab3State extends State<Tab3> {
     final XFile? pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
-        _backgroundImages.add(pickedFile.path); // Agregar nueva imagen al carrusel
+        _backgroundImages.add(pickedFile.path);
       });
     }
   }
@@ -193,7 +179,6 @@ class _Tab3State extends State<Tab3> {
 
       if (token != null) {
         final success = await CommerceService().updateCommerce(token, widget.entity['id'], commerceData);
-
         if (success) {
           showDialog(
             context: context,
@@ -212,193 +197,9 @@ class _Tab3State extends State<Tab3> {
               );
             },
           );
-        } else {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return CupertinoAlertDialog(
-                title: Text('Error'),
-                content: Text('Hubo un problema al actualizar el comercio.'),
-                actions: <Widget>[
-                  CupertinoDialogAction(
-                    child: Text('OK'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
         }
-      } else {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return CupertinoAlertDialog(
-              title: Text('Error de autenticación'),
-              content: Text('No se pudo obtener el token de autenticación.'),
-              actions: <Widget>[
-                CupertinoDialogAction(
-                  child: Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
       }
     }
-  }
-
-  Widget _buildBackgroundImageCarousel() {
-    return Column(
-      children: [
-        SizedBox(
-          height: 200,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _backgroundImages.map((imagePath) {
-                return Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Container(
-                    width: 150, // Cuadrado perfecto
-                    height: 150,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                    ),
-                    child: Image.network(
-                      imagePath,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Center(child: Text('Error al cargar'));
-                      },
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-        SizedBox(height: 8),
-        CupertinoButton.filled(
-          child: Text('Agregar Imagen de Fondo'),
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (context) {
-                return SafeArea(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        leading: Icon(Icons.photo_library),
-                        title: Text('Subir desde la galería'),
-                        onTap: () {
-                          _pickBackgroundImage(source: ImageSource.gallery);
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.camera_alt),
-                        title: Text('Tomar una foto'),
-                        onTap: () {
-                          _pickBackgroundImage(source: ImageSource.camera);
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.link),
-                        title: Text('Ingresar URL'),
-                        onTap: () {
-                          _enterBackgroundImageUrl();
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAvatarSection() {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 50,
-          backgroundImage: _avatarController.text.isNotEmpty
-              ? NetworkImage(_avatarController.text)
-              : AssetImage('assets/default_avatar.png') as ImageProvider,
-        ),
-        SizedBox(height: 8),
-        CupertinoButton.filled(
-          child: Text('Cambiar Avatar'),
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (context) {
-                return SafeArea(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        leading: Icon(Icons.photo),
-                        title: Text('Subir desde la galería'),
-                        onTap: () {
-                          _pickImage();
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.link),
-                        title: Text('Ingresar URL'),
-                        onTap: () {
-                          _enterAvatarUrl();
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTextFieldWithLabel({required String label, required TextEditingController controller, bool readOnly = false, TextInputType? keyboardType, List<TextInputFormatter>? inputFormatters}) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 3,
-          child: Text(
-            label,
-            style: TextStyle(fontSize: 14),
-          ),
-        ),
-        Expanded(
-          flex: 7,
-          child: CupertinoTextField(
-            controller: controller,
-            placeholder: label,
-            readOnly: readOnly,
-            keyboardType: keyboardType,
-            inputFormatters: inputFormatters,
-            style: TextStyle(fontSize: 14),
-          ),
-        ),
-      ],
-    );
   }
 
   @override
@@ -413,8 +214,14 @@ class _Tab3State extends State<Tab3> {
           key: _formKey,
           child: ListView(
             children: [
-              _buildAvatarSection(),
+              // Sección de Avatar
+              AvatarSection(
+                avatarController: _avatarController,
+                onPickImage: _pickImage,
+                onEnterAvatarUrl: _enterAvatarUrl,
+              ),
               SizedBox(height: 16),
+
               _buildTextFieldWithLabel(label: 'Nombre:', controller: _nameController),
               SizedBox(height: 16),
               _buildTextFieldWithLabel(label: 'Dirección:', controller: _addressController),
@@ -423,6 +230,8 @@ class _Tab3State extends State<Tab3> {
               SizedBox(height: 16),
               _buildTextFieldWithLabel(label: 'PLZ:', controller: _plzController, keyboardType: TextInputType.number, inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
               SizedBox(height: 16),
+
+              // Latitud y Longitud con botón de selección en el mapa
               Row(
                 children: [
                   Expanded(
@@ -440,63 +249,51 @@ class _Tab3State extends State<Tab3> {
                 ],
               ),
               SizedBox(height: 16),
-              _buildBackgroundImageCarousel(),
-              SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: 'Percent:', controller: _percentController, readOnly: true, keyboardType: TextInputType.numberWithOptions(decimal: true), inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
-              SizedBox(height: 16),
-              Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _openingTime != null
-                            ? 'Apertura: ${_openingTime!.format(context)}'
-                            : 'Selecciona hora de apertura',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87),
-                      ),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        child: Text(
-                          'Elegir',
-                          style: TextStyle(fontSize: 14, color: Colors.blue),
-                        ),
-                        onPressed: () => _selectTime(context, true),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _closingTime != null
-                            ? 'Cierre: ${_closingTime!.format(context)}'
-                            : 'Selecciona hora de cierre',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87),
-                      ),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        child: Text(
-                          'Elegir',
-                          style: TextStyle(fontSize: 14, color: Colors.blue),
-                        ),
-                        onPressed: () => _selectTime(context, false),
-                      ),
-                    ],
-                  ),
-                ],
+
+              // Carrusel de Imágenes de Fondo
+              BackgroundImageCarousel(
+                backgroundImages: _backgroundImages,
+                currentIndex: _currentBackgroundIndex,
+                onAddImage: _pickBackgroundImage,
+                onAddImageUrl: _enterBackgroundImageUrl,
+                onSelectImage: (index) {
+                  setState(() {
+                    _currentBackgroundIndex = index;
+                  });
+                },
               ),
               SizedBox(height: 16),
+
+              _buildTextFieldWithLabel(label: 'Percent:', controller: _percentController, readOnly: true),
+              SizedBox(height: 16),
+
+              // Sección de Selección de Horarios
+              TimePickerSection(
+                openingTime: _openingTime,
+                closingTime: _closingTime,
+                onSelectOpeningTime: (newTime) {
+                  setState(() {
+                    _openingTime = newTime;
+                  });
+                },
+                onSelectClosingTime: (newTime) {
+                  setState(() {
+                    _closingTime = newTime;
+                  });
+                },
+              ),
+              SizedBox(height: 20),
+
               CupertinoButton.filled(
-                child: Text('Guardar Cambios', style: TextStyle(fontSize: 14)),
+                child: Text('Guardar Cambios'),
                 onPressed: _saveCommerce,
               ),
+
               if (widget.entity['accepted'] == true)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: CupertinoButton.filled(
-                    child: Text(widget.entity['active'] ? 'Desactivar Comercio' : 'Activar Comercio', style: TextStyle(fontSize: 14)),
+                    child: Text(widget.entity['active'] ? 'Desactivar Comercio' : 'Activar Comercio'),
                     onPressed: () async {
                       final authService = Provider.of<AuthService>(context, listen: false);
                       final token = await authService.getToken();
@@ -510,19 +307,6 @@ class _Tab3State extends State<Tab3> {
                           setState(() {
                             widget.entity['active'] = !widget.entity['active'];
                           });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(widget.entity['active']
-                                  ? 'Comercio activado'
-                                  : 'Comercio desactivado'),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Error al cambiar el estado del comercio'),
-                            ),
-                          );
                         }
                       }
                     },
@@ -532,6 +316,29 @@ class _Tab3State extends State<Tab3> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextFieldWithLabel({required String label, required TextEditingController controller, bool readOnly = false, TextInputType? keyboardType, List<TextInputFormatter>? inputFormatters}) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 3,
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 14),
+          ),
+        ),
+        Expanded(
+          flex: 7,
+          child: CupertinoTextField(
+            controller: controller,
+            readOnly: readOnly,
+            keyboardType: keyboardType,
+            inputFormatters: inputFormatters,
+          ),
+        ),
+      ],
     );
   }
 }
