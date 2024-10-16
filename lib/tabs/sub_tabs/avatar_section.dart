@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../helpers/translations_helper.dart'; // Asegúrate de importar el helper de traducción
 
 class AvatarSection extends StatelessWidget {
   final TextEditingController avatarController;
@@ -18,13 +19,14 @@ class AvatarSection extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 50,
-          backgroundImage: avatarController.text.isNotEmpty
-              ? NetworkImage(avatarController.text)
-              : AssetImage('assets/default_avatar.png') as ImageProvider,
+          backgroundImage: NetworkImage(avatarController.text),
+          onBackgroundImageError: (_, __) {
+            print('Error al cargar la imagen del avatar');
+          },
         ),
         SizedBox(height: 8),
         CupertinoButton.filled(
-          child: Text('Cambiar Avatar'),
+          child: Text(translate(context, 'changeAvatar') ?? 'Cambiar Avatar'),
           onPressed: () {
             showModalBottomSheet(
               context: context,
@@ -35,7 +37,7 @@ class AvatarSection extends StatelessWidget {
                     children: [
                       ListTile(
                         leading: Icon(Icons.photo),
-                        title: Text('Subir desde la galería'),
+                        title: Text(translate(context, 'uploadFromGallery') ?? 'Subir desde la galería'),
                         onTap: () {
                           onPickImage();
                           Navigator.of(context).pop();
@@ -43,7 +45,7 @@ class AvatarSection extends StatelessWidget {
                       ),
                       ListTile(
                         leading: Icon(Icons.link),
-                        title: Text('Ingresar URL'),
+                        title: Text(translate(context, 'enterUrl') ?? 'Ingresar URL'),
                         onTap: () {
                           onEnterAvatarUrl();
                           Navigator.of(context).pop();

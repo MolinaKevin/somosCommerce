@@ -8,26 +8,64 @@ import 'create_nro_screen.dart';
 import 'login_screen.dart';
 import '../edit_page.dart';
 import '../edit_institution_page.dart';
+import '../helpers/translations_helper.dart';
+import '../providers/language_provider.dart';
 
 class BusinessInstitutionScreen extends StatefulWidget {
   @override
   _BusinessInstitutionScreenState createState() => _BusinessInstitutionScreenState();
 }
 
-class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
+class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
+    with AutomaticKeepAliveClientMixin {
   int _selectedSegment = 0;
+  List<bool> _isTileExpanded = [];
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeTileExpansionState();
+  }
+
+  void _initializeTileExpansionState() {
+    _isTileExpanded = List.filled(Provider.of<AuthService>(context, listen: false).commerces.length, false);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _initializeTileExpansionState();
+  }
+
+  // Cambiar el idioma
+  void _changeLanguage(String? selectedLanguage) {
+    if (selectedLanguage != null) {
+      Provider.of<LanguageProvider>(context, listen: false)
+          .updateLanguage(selectedLanguage); // Cambiar idioma
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final authService = Provider.of<AuthService>(context);
+    final languageProvider = Provider.of<LanguageProvider>(context); // Accedemos al idioma actual
 
     List<Map<String, dynamic>> _currentList = _selectedSegment == 0
         ? authService.commerces
         : authService.institutions;
 
+    if (_isTileExpanded.length != _currentList.length) {
+      _initializeTileExpansionState();
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mis Entidades'),
+        title: Text(translate(context, 'myEntities') ?? 'Mis Entidades'),
       ),
       drawer: Drawer(
         child: ListView(
@@ -38,7 +76,7 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
                 color: Colors.blue,
               ),
               child: Text(
-                'Menú',
+                translate(context, 'menu') ?? 'Menú',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 24,
@@ -47,14 +85,14 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
             ),
             ListTile(
               leading: Icon(Icons.business),
-              title: Text('Comercios e Instituciones'),
+              title: Text(translate(context, 'businessAndInstitutions') ?? 'Comercios e Instituciones'),
               onTap: () {
                 Navigator.pop(context); // Cierra el drawer
               },
             ),
             ListTile(
               leading: Icon(Icons.logout),
-              title: Text('Logout'),
+              title: Text(translate(context, 'logout') ?? 'Logout'),
               onTap: () async {
                 await authService.logout();
                 Navigator.of(context).pushReplacement(
@@ -63,6 +101,30 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
                   ),
                 );
               },
+            ),
+            Divider(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(translate(context, 'selectLanguage') ?? 'Seleccionar idioma'),
+                  DropdownButton<String>(
+                    value: languageProvider.currentLanguage, // Usamos currentLanguage
+                    onChanged: _changeLanguage,
+                    items: [
+                      DropdownMenuItem(
+                        value: 'es',
+                        child: Text('Español'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'en',
+                        child: Text('English'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -73,12 +135,13 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
             padding: const EdgeInsets.all(16.0),
             child: CupertinoSegmentedControl<int>(
               children: {
-                0: Text('Comercios'),
-                1: Text('Instituciones'),
+                0: Text(translate(context, 'businesses') ?? 'Comercios'),
+                1: Text(translate(context, 'institutions') ?? 'Instituciones'),
               },
               onValueChanged: (int value) {
                 setState(() {
                   _selectedSegment = value;
+                  _initializeTileExpansionState();
                 });
               },
               groupValue: _selectedSegment,
@@ -86,17 +149,22 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
           ),
           Expanded(
             child: ListView.builder(
-              key: PageStorageKey<String>('listView$_selectedSegment'),
               itemCount: _currentList.length,
               itemBuilder: (BuildContext context, int index) {
                 final item = _currentList[index];
-                final bool isActive = item['active'] ?? true; // Default to true if 'active' doesn't exist
+                final bool isActive = item['active'] ?? true;
 
                 return Card(
-                  color: isActive ? Colors.white : Colors.grey[300], // Grey out inactive items
+                  color: isActive ? Colors.white : Colors.grey[300],
                   child: ExpansionTile(
+                    initiallyExpanded: _isTileExpanded[index],
+                    onExpansionChanged: (bool expanded) {
+                      setState(() {
+                        _isTileExpanded[index] = expanded;
+                      });
+                    },
                     leading: Image.network(
-                      item['avatar'] ?? '',
+                      item['avatar_url'] ?? '',
                       width: 50,
                       height: 50,
                       fit: BoxFit.cover,
@@ -105,8 +173,8 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Dirección: ${item['address'] ?? ''}'),
-                        Text('Teléfono: ${item['phone'] ?? ''}'),
+                        Text('${translate(context, 'address') ?? 'Dirección'}: ${item['address'] ?? ''}'),
+                        Text('${translate(context, 'phone') ?? 'Teléfono'}: ${item['phone'] ?? ''}'),
                       ],
                     ),
                     children: [
@@ -117,18 +185,15 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
                           children: [
                             ElevatedButton.icon(
                               icon: Icon(Icons.edit, color: Colors.blue),
-                              label: Text('Editar'),
+                              label: Text(translate(context, 'edit') ?? 'Editar'),
                               onPressed: () {
                                 if (_selectedSegment == 0) {
-                                  // Es un comercio
                                   Navigator.of(context).push(
                                     CupertinoPageRoute(
                                       builder: (context) => EditPage(entity: item),
                                     ),
                                   );
                                 } else {
-                                  // Es una institución
-                                  print('selectedSegment: $_selectedSegment');
                                   Navigator.of(context).push(
                                     CupertinoPageRoute(
                                       builder: (context) => EditInstitutionPage(entity: item),
@@ -136,14 +201,13 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
                                   );
                                 }
                               },
-
                             ),
                             ElevatedButton.icon(
                               icon: Icon(
                                 isActive ? Icons.cancel : Icons.check_circle,
                                 color: Colors.orange,
                               ),
-                              label: Text(isActive ? 'Desactivar' : 'Activar'),
+                              label: Text(isActive ? translate(context, 'deactivate') ?? 'Desactivar' : translate(context, 'activate') ?? 'Activar'),
                               onPressed: () async {
                                 final token = await authService.getToken();
                                 final commerceService = CommerceService();
@@ -154,8 +218,8 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
                                     context: context,
                                     builder: (context) {
                                       return CupertinoAlertDialog(
-                                        title: Text('No aceptado'),
-                                        content: Text('El comercio ${item['name']} aún no está aceptado, por favor espere.'),
+                                        title: Text(translate(context, 'notAccepted') ?? 'No aceptado'),
+                                        content: Text('${translate(context, 'theBusiness')} ${item['name']} ${translate(context, 'isNotAccepted')}'),
                                         actions: <CupertinoDialogAction>[
                                           CupertinoDialogAction(
                                             child: Text('OK'),
@@ -185,7 +249,7 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
                                       builder: (context) {
                                         return CupertinoAlertDialog(
                                           title: Text('Error'),
-                                          content: Text('Hubo un problema al ${isActive ? 'desactivar' : 'activar'} el comercio.'),
+                                          content: Text('${translate(context, 'problem')} ${isActive ? translate(context, 'deactivating') : translate(context, 'activating')} ${translate(context, 'theBusiness')}'),
                                           actions: <CupertinoDialogAction>[
                                             CupertinoDialogAction(
                                               child: Text('OK'),
@@ -203,10 +267,9 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
                             ),
                             ElevatedButton.icon(
                               icon: Icon(Icons.delete, color: Colors.red),
-                              label: Text('Eliminar'),
+                              label: Text(translate(context, 'delete') ?? 'Eliminar'),
                               onPressed: () {
-                                // Aquí puedes manejar la lógica de eliminación
-                                print('Eliminar ${item['name']}');
+                                print('${translate(context, 'deleting')} ${item['name']}');
                               },
                             ),
                           ],
@@ -223,14 +286,12 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
             child: CupertinoButton.filled(
               onPressed: () {
                 if (_selectedSegment == 0) {
-                  // Navegar a la pantalla de creación de comercio
                   Navigator.of(context).push(
                     CupertinoPageRoute(
                       builder: (context) => CreateCommerceScreen(),
                     ),
                   );
                 } else {
-                  // Navegar a la pantalla de creación de institución
                   Navigator.of(context).push(
                     CupertinoPageRoute(
                       builder: (context) => CreateInstitutionScreen(),
@@ -239,7 +300,9 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen> {
                 }
               },
               child: Text(
-                _selectedSegment == 0 ? 'Crear nuevo comercio' : 'Crear nueva institución',
+                _selectedSegment == 0
+                    ? translate(context, 'createNewBusiness') ?? 'Crear nuevo comercio'
+                    : translate(context, 'createNewInstitution') ?? 'Crear nueva institución',
               ),
             ),
           ),

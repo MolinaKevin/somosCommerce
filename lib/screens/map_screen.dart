@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../helpers/translations_helper.dart'; // Importa el helper de traducción
 
 class MapScreen extends StatefulWidget {
   final LatLng initialLocation;
@@ -106,7 +107,7 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Seleccionar ubicación'),
+        title: Text(translate(context, 'selectLocation') ?? 'Seleccionar ubicación'),
         actions: [
           IconButton(
             icon: Icon(Icons.check),
@@ -172,7 +173,7 @@ class _MapScreenState extends State<MapScreen> {
                         child: TextField(
                           controller: _searchController,
                           decoration: InputDecoration(
-                            hintText: 'Buscar lugar...',
+                            hintText: translate(context, 'searchPlace') ?? 'Buscar lugar...',
                             border: InputBorder.none,
                           ),
                           onChanged: _onSearchChanged, // Usar el método con debounce

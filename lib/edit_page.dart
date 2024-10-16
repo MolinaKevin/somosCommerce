@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart'; // Importa para utilizar el botón Material si lo deseas
+import 'package:flutter/material.dart';
 import 'tabs/tab_1.dart';
 import 'tabs/tab_2.dart';
 import 'tabs/tab_3.dart';
+import '../helpers/translations_helper.dart';  // Importar el helper de traducciones
 
 class EditPage extends StatefulWidget {
   final Map<String, dynamic> entity;
@@ -40,15 +41,15 @@ class _EditPageState extends State<EditPage> {
             items: [
               BottomNavigationBarItem(
                 icon: Icon(CupertinoIcons.circle),
-                label: 'Tab 1',
+                label: translate(context, 'tab1') ?? 'Tab 1',  // Modificado
               ),
               BottomNavigationBarItem(
                 icon: Icon(CupertinoIcons.list_bullet),
-                label: 'Tab 2',
+                label: translate(context, 'tab2') ?? 'Tab 2',  // Modificado
               ),
               BottomNavigationBarItem(
                 icon: Icon(CupertinoIcons.profile_circled),
-                label: 'Tab 3',
+                label: translate(context, 'tab3') ?? 'Tab 3',  // Modificado
               ),
             ],
             currentIndex: _currentIndex,

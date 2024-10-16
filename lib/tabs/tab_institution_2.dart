@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/institution_movement_service.dart';
 import '../services/auth_service.dart';
+import '../helpers/translations_helper.dart'; // Importa el helper de traducciones
 
 class TabInstitution2 extends StatefulWidget {
   final Map<String, dynamic> entity;
@@ -52,7 +53,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
           isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo obtener el token de autenticación')),
+          SnackBar(content: Text(translate(context, 'authTokenError') ?? 'No se pudo obtener el token de autenticación')),
         );
       }
     } catch (error) {
@@ -60,7 +61,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar los movimientos: $error')),
+        SnackBar(content: Text(translate(context, 'movementsLoadError') ?? 'Error al cargar los movimientos: $error')),
       );
     }
   }
@@ -87,27 +88,27 @@ class _TabInstitution2State extends State<TabInstitution2> {
 
   String _getMovementDescription(Map<String, dynamic> movement) {
     String formatDate(String? date) {
-      if (date == null) return 'N/A';
+      if (date == null) return translate(context, 'notAvailable') ?? 'N/A';
       try {
         final parsedDate = DateTime.parse(date);
         return DateFormat('dd/MM/yyyy HH:mm').format(parsedDate); // Formato: día/mes/año horas:minutos
       } catch (e) {
-        return 'Fecha inválida';
+        return translate(context, 'invalidDate') ?? 'Fecha inválida';
       }
     }
 
     switch (movement['type']) {
       case 'donation_received':
-        return 'Donación de: ${movement['donor_name'] ?? 'N/A'}\nFecha: ${formatDate(movement['created_at'])}';
+        return '${translate(context, 'donationFrom') ?? 'Donación de'}: ${movement['donor_name'] ?? 'N/A'}\n${translate(context, 'date') ?? 'Fecha'}: ${formatDate(movement['created_at'])}';
       case 'contribution_made':
-        return 'Contribución a: ${movement['recipient_name'] ?? 'N/A'}\nFecha: ${formatDate(movement['created_at'])}';
+        return '${translate(context, 'contributionTo') ?? 'Contribución a'}: ${movement['recipient_name'] ?? 'N/A'}\n${translate(context, 'date') ?? 'Fecha'}: ${formatDate(movement['created_at'])}';
       default:
-        return 'Sin descripción';
+        return translate(context, 'noDescription') ?? 'Sin descripción';
     }
   }
 
   String _getAmountOrPoints(Map<String, dynamic> movement) {
-    return 'Puntos: ${movement['points'] ?? 0}';
+    return '${translate(context, 'points') ?? 'Puntos'}: ${movement['points'] ?? 0}';
   }
 
   Widget _buildMovementItem(Map<String, dynamic> movement) {
@@ -129,7 +130,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Movimientos de la Institución'),
+        title: Text(translate(context, 'institutionMovements') ?? 'Movimientos de la Institución'), // Modificado
       ),
       body: Column(
         children: [
@@ -140,7 +141,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
               child: Row(
                 children: [
                   TextButton(
-                    child: Text('Todos'),
+                    child: Text(translate(context, 'all') ?? 'Todos'), // Modificado
                     onPressed: () {
                       setState(() {
                         selectedFilter = 'all';
@@ -148,7 +149,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
                     },
                   ),
                   TextButton(
-                    child: Text('Donaciones Recibidas'),
+                    child: Text(translate(context, 'donationsReceived') ?? 'Donaciones Recibidas'), // Modificado
                     onPressed: () {
                       setState(() {
                         selectedFilter = 'donation_received';
@@ -156,7 +157,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
                     },
                   ),
                   TextButton(
-                    child: Text('Contribuciones Realizadas'),
+                    child: Text(translate(context, 'contributionsMade') ?? 'Contribuciones Realizadas'), // Modificado
                     onPressed: () {
                       setState(() {
                         selectedFilter = 'contribution_made';
@@ -171,7 +172,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
             child: isLoading
                 ? Center(child: CircularProgressIndicator())
                 : filteredMovements.isEmpty
-                ? Center(child: Text('No hay movimientos disponibles'))
+                ? Center(child: Text(translate(context, 'noMovements') ?? 'No hay movimientos disponibles')) // Modificado
                 : ListView.builder(
               itemCount: filteredMovements.length,
               itemBuilder: (context, index) {

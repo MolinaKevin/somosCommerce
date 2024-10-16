@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/commerce_movement_service.dart';
 import '../services/auth_service.dart';
+import '../helpers/translations_helper.dart'; // Importar el helper de traducciones
 
 class Tab2 extends StatefulWidget {
   final Map<String, dynamic> entity;
@@ -54,7 +55,7 @@ class _Tab2State extends State<Tab2> {
           isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo obtener el token de autenticación')),
+          SnackBar(content: Text(translate(context, 'authTokenError') ?? 'No se pudo obtener el token de autenticación')),
         );
       }
     } catch (error) {
@@ -62,7 +63,7 @@ class _Tab2State extends State<Tab2> {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar los movimientos: $error')),
+        SnackBar(content: Text(translate(context, 'movementsLoadError') ?? 'Error al cargar los movimientos: $error')),
       );
     }
   }
@@ -92,27 +93,26 @@ class _Tab2State extends State<Tab2> {
   String _getMovementDescription(Map<String, dynamic> movement) {
     // Parsear la fecha si existe
     String formatDate(String? date) {
-      if (date == null) return 'N/A';
+      if (date == null) return translate(context, 'notAvailable') ?? 'N/A';
       try {
         final parsedDate = DateTime.parse(date);
         return DateFormat('dd/MM/yyyy HH:mm').format(parsedDate); // Formato: día/mes/año horas:minutos
       } catch (e) {
-        return 'Fecha inválida';
+        return translate(context, 'invalidDate') ?? 'Fecha inválida';
       }
     }
 
     switch (movement['type']) {
       case 'purchase':
-        return 'Pass: ${movement['user_pass'] ?? 'N/A'}\nFecha: ${formatDate(movement['created_at'])}';
+        return '${translate(context, 'pass') ?? 'Pass'}: ${movement['user_pass'] ?? 'N/A'}\n${translate(context, 'date') ?? 'Fecha'}: ${formatDate(movement['created_at'])}';
       case 'donation':
-        return 'Donación a: ${movement['donation_number'] ?? 'N/A'}\nFecha: ${formatDate(movement['created_at'])}';
+        return '${translate(context, 'donationTo') ?? 'Donación a'}: ${movement['donation_number'] ?? 'N/A'}\n${translate(context, 'date') ?? 'Fecha'}: ${formatDate(movement['created_at'])}';
       case 'cashout':
-        return 'Fecha de retiro: ${formatDate(movement['created_at'])}';
+        return '${translate(context, 'withdrawalDate') ?? 'Fecha de retiro'}: ${formatDate(movement['created_at'])}';
       default:
-        return 'Sin descripción';
+        return translate(context, 'noDescription') ?? 'Sin descripción';
     }
   }
-
 
   Widget _buildMovementItem(Map<String, dynamic> movement) {
     bool isPaid;
@@ -138,9 +138,9 @@ class _Tab2State extends State<Tab2> {
 
   String _getAmountOrPoints(Map<String, dynamic> movement) {
     if (movement['type'] == 'purchase') {
-      return 'Monto: ${movement['amount'] ?? 0}';
+      return '${translate(context, 'amount') ?? 'Monto'}: ${movement['amount'] ?? 0}';
     } else {
-      return 'Puntos: ${movement['points'] ?? 0}';
+      return '${translate(context, 'points') ?? 'Puntos'}: ${movement['points'] ?? 0}';
     }
   }
 
@@ -150,7 +150,7 @@ class _Tab2State extends State<Tab2> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Movimientos del Comercio'),
+        title: Text(translate(context, 'commerceMovements') ?? 'Movimientos del Comercio'), // Modificado
       ),
       body: Column(
         children: [
@@ -161,7 +161,7 @@ class _Tab2State extends State<Tab2> {
               child: Row(
                 children: [
                   TextButton(
-                    child: Text('Todos'),
+                    child: Text(translate(context, 'all') ?? 'Todos'), // Modificado
                     onPressed: () {
                       setState(() {
                         selectedFilter = 'all';
@@ -169,7 +169,7 @@ class _Tab2State extends State<Tab2> {
                     },
                   ),
                   TextButton(
-                    child: Text('Compras'),
+                    child: Text(translate(context, 'purchases') ?? 'Compras'), // Modificado
                     onPressed: () {
                       setState(() {
                         selectedFilter = 'purchase';
@@ -177,7 +177,7 @@ class _Tab2State extends State<Tab2> {
                     },
                   ),
                   TextButton(
-                    child: Text('Donaciones'),
+                    child: Text(translate(context, 'donations') ?? 'Donaciones'), // Modificado
                     onPressed: () {
                       setState(() {
                         selectedFilter = 'donation';
@@ -185,7 +185,7 @@ class _Tab2State extends State<Tab2> {
                     },
                   ),
                   TextButton(
-                    child: Text('Closures'),
+                    child: Text(translate(context, 'closures') ?? 'Closures'), // Modificado
                     onPressed: () {
                       setState(() {
                         selectedFilter = 'cashout';
@@ -200,7 +200,7 @@ class _Tab2State extends State<Tab2> {
             child: isLoading
                 ? Center(child: CircularProgressIndicator())
                 : filteredMovements.isEmpty
-                ? Center(child: Text('No hay movimientos disponibles'))
+                ? Center(child: Text(translate(context, 'noMovements') ?? 'No hay movimientos disponibles')) // Modificado
                 : ListView.builder(
               itemCount: filteredMovements.length,
               itemBuilder: (context, index) {

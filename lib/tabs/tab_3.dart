@@ -10,6 +10,7 @@ import 'sub_tabs/avatar_section.dart';
 import 'sub_tabs/background_image_carousel.dart';
 import 'sub_tabs/time_picker_section.dart';
 import 'package:flutter/services.dart';
+import '../helpers/translations_helper.dart'; // Importa el helper de traducción
 
 class Tab3 extends StatefulWidget {
   final Map<String, dynamic> entity;
@@ -50,10 +51,17 @@ class _Tab3State extends State<Tab3> {
     _plzController = TextEditingController(text: widget.entity['plz'].toString());
     _latitudeController = TextEditingController(text: widget.entity['latitude'].toString());
     _longitudeController = TextEditingController(text: widget.entity['longitude'].toString());
-    _avatarController = TextEditingController(text: widget.entity['avatar']);
+    _avatarController = TextEditingController(text: widget.entity['avatar_url']);
     _percentController = TextEditingController(text: widget.entity['percent']?.toString() ?? '');
 
-    _backgroundImages.add(widget.entity['background_image']);
+    if (widget.entity['background_image'] != null) {
+      _backgroundImages.add(widget.entity['background_image']);
+    }
+
+    if (widget.entity['fotos_urls'] != null && widget.entity['fotos_urls'].isNotEmpty) {
+      _backgroundImages.addAll(List<String>.from(widget.entity['fotos_urls']));
+    }
+
     _openingTime = _parseTime(widget.entity['opening_time']);
     _closingTime = _parseTime(widget.entity['closing_time']);
   }
@@ -81,7 +89,7 @@ class _Tab3State extends State<Tab3> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Ingresar URL del Avatar'),
+          title: Text(translate(context, 'enterAvatarUrl') ?? 'Ingresar URL del Avatar'),
           content: TextField(
             controller: urlController,
             decoration: InputDecoration(hintText: 'https://example.com/avatar.png'),
@@ -94,7 +102,7 @@ class _Tab3State extends State<Tab3> {
                 });
                 Navigator.of(context).pop();
               },
-              child: Text('Guardar'),
+              child: Text(translate(context, 'save') ?? 'Guardar'),
             ),
           ],
         );
@@ -117,7 +125,7 @@ class _Tab3State extends State<Tab3> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Ingresar URL de la Imagen de Fondo'),
+          title: Text(translate(context, 'enterBackgroundImageUrl') ?? 'Ingresar URL de la Imagen de Fondo'),
           content: TextField(
             controller: urlController,
             decoration: InputDecoration(hintText: 'https://example.com/fondo.png'),
@@ -130,7 +138,7 @@ class _Tab3State extends State<Tab3> {
                 });
                 Navigator.of(context).pop();
               },
-              child: Text('Guardar'),
+              child: Text(translate(context, 'save') ?? 'Guardar'),
             ),
           ],
         );
@@ -168,7 +176,9 @@ class _Tab3State extends State<Tab3> {
         'latitude': _latitudeController.text,
         'longitude': _longitudeController.text,
         'avatar': _avatarController.text,
-        'background_image': _backgroundImages[_currentBackgroundIndex],
+        'background_image': _backgroundImages.isNotEmpty && _currentBackgroundIndex >= 0
+            ? _backgroundImages[_currentBackgroundIndex]
+            : null,
         'percent': double.tryParse(_percentController.text) ?? 0.0,
         'opening_time': _openingTime?.format(context),
         'closing_time': _closingTime?.format(context),
@@ -184,8 +194,8 @@ class _Tab3State extends State<Tab3> {
             context: context,
             builder: (context) {
               return CupertinoAlertDialog(
-                title: Text('Comercio actualizado'),
-                content: Text('El comercio ha sido actualizado exitosamente.'),
+                title: Text(translate(context, 'commerceUpdated') ?? 'Comercio actualizado'),
+                content: Text(translate(context, 'commerceUpdatedSuccessfully') ?? 'El comercio ha sido actualizado exitosamente.'),
                 actions: <Widget>[
                   CupertinoDialogAction(
                     child: Text('OK'),
@@ -206,7 +216,7 @@ class _Tab3State extends State<Tab3> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text('Editar Comercio'),
+        middle: Text(translate(context, 'editCommerce') ?? 'Editar Comercio'),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -222,13 +232,13 @@ class _Tab3State extends State<Tab3> {
               ),
               SizedBox(height: 16),
 
-              _buildTextFieldWithLabel(label: 'Nombre:', controller: _nameController),
+              _buildTextFieldWithLabel(label: translate(context, 'name') ?? 'Nombre:', controller: _nameController),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: 'Dirección:', controller: _addressController),
+              _buildTextFieldWithLabel(label: translate(context, 'address') ?? 'Dirección:', controller: _addressController),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: 'Ciudad:', controller: _cityController),
+              _buildTextFieldWithLabel(label: translate(context, 'city') ?? 'Ciudad:', controller: _cityController),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: 'PLZ:', controller: _plzController, keyboardType: TextInputType.number, inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
+              _buildTextFieldWithLabel(label: translate(context, 'plz') ?? 'PLZ:', controller: _plzController, keyboardType: TextInputType.number, inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
               SizedBox(height: 16),
 
               // Latitud y Longitud con botón de selección en el mapa
@@ -236,11 +246,11 @@ class _Tab3State extends State<Tab3> {
                 children: [
                   Expanded(
                     flex: 7,
-                    child: _buildTextFieldWithLabel(label: 'Latitud:', controller: _latitudeController, keyboardType: TextInputType.numberWithOptions(decimal: true), inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
+                    child: _buildTextFieldWithLabel(label: translate(context, 'latitude') ?? 'Latitud:', controller: _latitudeController, keyboardType: TextInputType.numberWithOptions(decimal: true), inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
                   ),
                   Expanded(
                     flex: 7,
-                    child: _buildTextFieldWithLabel(label: 'Longitud:', controller: _longitudeController, keyboardType: TextInputType.numberWithOptions(decimal: true), inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
+                    child: _buildTextFieldWithLabel(label: translate(context, 'longitude') ?? 'Longitud:', controller: _longitudeController, keyboardType: TextInputType.numberWithOptions(decimal: true), inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
                   ),
                   IconButton(
                     icon: Icon(Icons.map),
@@ -254,17 +264,27 @@ class _Tab3State extends State<Tab3> {
               BackgroundImageCarousel(
                 backgroundImages: _backgroundImages,
                 currentIndex: _currentBackgroundIndex,
-                onAddImage: _pickBackgroundImage,
-                onAddImageUrl: _enterBackgroundImageUrl,
+                entityType: 'commerce',
+                entityId: widget.entity['id'],
+                onImageUploaded: (imageUrl) {
+                  if (imageUrl != null) {
+                    setState(() {
+                      _backgroundImages.add(imageUrl);
+                    });
+                  } else {
+                    print("No se subió ninguna imagen.");
+                  }
+                },
                 onSelectImage: (index) {
                   setState(() {
                     _currentBackgroundIndex = index;
                   });
                 },
               ),
+
               SizedBox(height: 16),
 
-              _buildTextFieldWithLabel(label: 'Percent:', controller: _percentController, readOnly: true),
+              _buildTextFieldWithLabel(label: translate(context, 'percent') ?? 'Percent:', controller: _percentController, readOnly: true),
               SizedBox(height: 16),
 
               // Sección de Selección de Horarios
@@ -285,7 +305,7 @@ class _Tab3State extends State<Tab3> {
               SizedBox(height: 20),
 
               CupertinoButton.filled(
-                child: Text('Guardar Cambios'),
+                child: Text(translate(context, 'saveChanges') ?? 'Guardar Cambios'),
                 onPressed: _saveCommerce,
               ),
 
@@ -293,7 +313,7 @@ class _Tab3State extends State<Tab3> {
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: CupertinoButton.filled(
-                    child: Text(widget.entity['active'] ? 'Desactivar Comercio' : 'Activar Comercio'),
+                    child: Text(widget.entity['active'] ? (translate(context, 'deactivateCommerce') ?? 'Desactivar Comercio') : (translate(context, 'activateCommerce') ?? 'Activar Comercio')),
                     onPressed: () async {
                       final authService = Provider.of<AuthService>(context, listen: false);
                       final token = await authService.getToken();

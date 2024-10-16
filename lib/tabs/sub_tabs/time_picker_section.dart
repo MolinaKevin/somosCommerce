@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../helpers/translations_helper.dart'; // Importa el helper de traducción
 
 class TimePickerSection extends StatelessWidget {
   final TimeOfDay? openingTime;
@@ -23,11 +24,11 @@ class TimePickerSection extends StatelessWidget {
           children: [
             Text(
               openingTime != null
-                  ? 'Apertura: ${openingTime!.format(context)}'
-                  : 'Selecciona hora de apertura',
+                  ? '${translate(context, 'openingTime') ?? 'Apertura'}: ${openingTime!.format(context)}'
+                  : translate(context, 'selectOpeningTime') ?? 'Selecciona hora de apertura',
             ),
             CupertinoButton(
-              child: Text('Elegir'),
+              child: Text(translate(context, 'choose') ?? 'Elegir'),
               onPressed: () async {
                 final pickedTime = await showTimePicker(
                   context: context,
@@ -45,11 +46,11 @@ class TimePickerSection extends StatelessWidget {
           children: [
             Text(
               closingTime != null
-                  ? 'Cierre: ${closingTime!.format(context)}'
-                  : 'Selecciona hora de cierre',
+                  ? '${translate(context, 'closingTime') ?? 'Cierre'}: ${closingTime!.format(context)}'
+                  : translate(context, 'selectClosingTime') ?? 'Selecciona hora de cierre',
             ),
             CupertinoButton(
-              child: Text('Elegir'),
+              child: Text(translate(context, 'choose') ?? 'Elegir'),
               onPressed: () async {
                 final pickedTime = await showTimePicker(
                   context: context,

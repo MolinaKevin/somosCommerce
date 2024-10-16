@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../services/commerce_service.dart';
+import '../helpers/translations_helper.dart'; // Importa el helper de traducción
 
 class CreateCommerceScreen extends StatefulWidget {
   @override
@@ -85,8 +86,8 @@ class _CreateCommerceScreenState extends State<CreateCommerceScreen> {
             context: context,
             builder: (context) {
               return AlertDialog(
-                title: Text('Comercio creado'),
-                content: Text('El comercio ha sido creado exitosamente.'),
+                title: Text(translate(context, 'businessCreated') ?? 'Comercio creado'),
+                content: Text(translate(context, 'businessCreatedSuccessfully') ?? 'El comercio ha sido creado exitosamente.'),
                 actions: <Widget>[
                   TextButton(
                     child: Text('OK'),
@@ -105,8 +106,8 @@ class _CreateCommerceScreenState extends State<CreateCommerceScreen> {
             context: context,
             builder: (context) {
               return AlertDialog(
-                title: Text('Error'),
-                content: Text('Hubo un problema al crear el comercio.'),
+                title: Text(translate(context, 'error') ?? 'Error'),
+                content: Text(translate(context, 'errorCreatingBusiness') ?? 'Hubo un problema al crear el comercio.'),
                 actions: <Widget>[
                   TextButton(
                     child: Text('OK'),
@@ -125,8 +126,8 @@ class _CreateCommerceScreenState extends State<CreateCommerceScreen> {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text('Error de autenticación'),
-              content: Text('No se pudo obtener el token de autenticación.'),
+              title: Text(translate(context, 'authError') ?? 'Error de autenticación'),
+              content: Text(translate(context, 'tokenNotFound') ?? 'No se pudo obtener el token de autenticación.'),
               actions: <Widget>[
                 TextButton(
                   child: Text('OK'),
@@ -146,7 +147,7 @@ class _CreateCommerceScreenState extends State<CreateCommerceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Crear Nuevo Comercio'),
+        title: Text(translate(context, 'createNewBusiness') ?? 'Crear Nuevo Comercio'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -156,42 +157,42 @@ class _CreateCommerceScreenState extends State<CreateCommerceScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'Nombre'),
+                decoration: InputDecoration(labelText: translate(context, 'name') ?? 'Nombre'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa un nombre';
+                    return translate(context, 'pleaseEnterName') ?? 'Por favor ingresa un nombre';
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _addressController,
-                decoration: InputDecoration(labelText: 'Dirección'),
+                decoration: InputDecoration(labelText: translate(context, 'address') ?? 'Dirección'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa una dirección';
+                    return translate(context, 'pleaseEnterAddress') ?? 'Por favor ingresa una dirección';
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _cityController,
-                decoration: InputDecoration(labelText: 'Ciudad'),
+                decoration: InputDecoration(labelText: translate(context, 'city') ?? 'Ciudad'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa una ciudad';
+                    return translate(context, 'pleaseEnterCity') ?? 'Por favor ingresa una ciudad';
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _plzController,
-                decoration: InputDecoration(labelText: 'PLZ'),
+                decoration: InputDecoration(labelText: translate(context, 'plz') ?? 'PLZ'),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa el código postal (PLZ)';
+                    return translate(context, 'pleaseEnterPLZ') ?? 'Por favor ingresa el código postal (PLZ)';
                   }
                   return null;
                 },
@@ -201,12 +202,12 @@ class _CreateCommerceScreenState extends State<CreateCommerceScreen> {
                   Expanded(
                     child: TextFormField(
                       controller: _latitudeController,
-                      decoration: InputDecoration(labelText: 'Latitud'),
+                      decoration: InputDecoration(labelText: translate(context, 'latitude') ?? 'Latitud'),
                       keyboardType: TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Por favor ingresa la latitud';
+                          return translate(context, 'pleaseEnterLatitude') ?? 'Por favor ingresa la latitud';
                         }
                         return null;
                       },
@@ -216,12 +217,12 @@ class _CreateCommerceScreenState extends State<CreateCommerceScreen> {
                   Expanded(
                     child: TextFormField(
                       controller: _longitudeController,
-                      decoration: InputDecoration(labelText: 'Longitud'),
+                      decoration: InputDecoration(labelText: translate(context, 'longitude') ?? 'Longitud'),
                       keyboardType: TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Por favor ingresa la longitud';
+                          return translate(context, 'pleaseEnterLongitude') ?? 'Por favor ingresa la longitud';
                         }
                         return null;
                       },
@@ -231,32 +232,32 @@ class _CreateCommerceScreenState extends State<CreateCommerceScreen> {
               ),
               TextFormField(
                 controller: _avatarController,
-                decoration: InputDecoration(labelText: 'Avatar (URL)'),
+                decoration: InputDecoration(labelText: translate(context, 'avatarUrl') ?? 'Avatar (URL)'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa la URL del avatar';
+                    return translate(context, 'pleaseEnterAvatarUrl') ?? 'Por favor ingresa la URL del avatar';
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _backgroundImageController,
-                decoration: InputDecoration(labelText: 'Imagen de Fondo (URL)'),
+                decoration: InputDecoration(labelText: translate(context, 'backgroundImageUrl') ?? 'Imagen de Fondo (URL)'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa la URL de la imagen de fondo';
+                    return translate(context, 'pleaseEnterBackgroundImageUrl') ?? 'Por favor ingresa la URL de la imagen de fondo';
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _percentController,
-                decoration: InputDecoration(labelText: 'Percent'),
+                decoration: InputDecoration(labelText: translate(context, 'percent') ?? 'Percent'),
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa un porcentaje';
+                    return translate(context, 'pleaseEnterPercent') ?? 'Por favor ingresa un porcentaje';
                   }
                   return null;
                 },
@@ -266,11 +267,11 @@ class _CreateCommerceScreenState extends State<CreateCommerceScreen> {
                 children: [
                   Text(
                     _openingTime != null
-                        ? 'Apertura: ${_openingTime!.format(context)}'
-                        : 'Selecciona hora de apertura',
+                        ? '${translate(context, 'openingTime') ?? 'Apertura'}: ${_openingTime!.format(context)}'
+                        : translate(context, 'selectOpeningTime') ?? 'Selecciona hora de apertura',
                   ),
                   CupertinoButton(
-                    child: Text('Elegir'),
+                    child: Text(translate(context, 'choose') ?? 'Elegir'),
                     onPressed: () => _selectTime(context, true),
                   ),
                 ],
@@ -280,18 +281,18 @@ class _CreateCommerceScreenState extends State<CreateCommerceScreen> {
                 children: [
                   Text(
                     _closingTime != null
-                        ? 'Cierre: ${_closingTime!.format(context)}'
-                        : 'Selecciona hora de cierre',
+                        ? '${translate(context, 'closingTime') ?? 'Cierre'}: ${_closingTime!.format(context)}'
+                        : translate(context, 'selectClosingTime') ?? 'Selecciona hora de cierre',
                   ),
                   CupertinoButton(
-                    child: Text('Elegir'),
+                    child: Text(translate(context, 'choose') ?? 'Elegir'),
                     onPressed: () => _selectTime(context, false),
                   ),
                 ],
               ),
               SizedBox(height: 20),
               CupertinoButton.filled(
-                child: Text('Guardar Comercio'),
+                child: Text(translate(context, 'saveBusiness') ?? 'Guardar Comercio'),
                 onPressed: _saveCommerce,
               ),
             ],

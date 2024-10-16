@@ -2,11 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'tabs/tab_institution_1.dart';
 import 'tabs/tab_institution_2.dart';
 import 'tabs/tab_institution_3.dart';
+import '../helpers/translations_helper.dart'; // Importar el helper de traducciones
 
 class EditInstitutionPage extends StatefulWidget {
   final Map<String, dynamic> entity;
 
-  EditInstitutionPage({required this.entity});  // Constructor que acepta un entity
+  EditInstitutionPage({required this.entity});
 
   @override
   _EditInstitutionPageState createState() => _EditInstitutionPageState();
@@ -40,15 +41,15 @@ class _EditInstitutionPageState extends State<EditInstitutionPage> {
             items: [
               BottomNavigationBarItem(
                 icon: Icon(CupertinoIcons.circle),
-                label: 'Tab 1',
+                label: translate(context, 'tab1') ?? 'Tab 1',  // Modificado
               ),
               BottomNavigationBarItem(
                 icon: Icon(CupertinoIcons.list_bullet),
-                label: 'Tab 2',
+                label: translate(context, 'tab2') ?? 'Tab 2',  // Modificado
               ),
               BottomNavigationBarItem(
                 icon: Icon(CupertinoIcons.profile_circled),
-                label: 'Tab 3',
+                label: translate(context, 'tab3') ?? 'Tab 3',  // Modificado
               ),
             ],
             currentIndex: _currentIndex,

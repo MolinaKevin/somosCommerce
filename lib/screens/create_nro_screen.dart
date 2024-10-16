@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../helpers/translations_helper.dart'; // Importa el helper de traducción
 
 class CreateInstitutionScreen extends StatefulWidget {
   @override
@@ -21,7 +22,7 @@ class _CreateInstitutionScreenState extends State<CreateInstitutionScreen> {
   final TextEditingController _backgroundImageController = TextEditingController();
   final TextEditingController _percentController = TextEditingController();
 
-  String? _selectedSomos; // Variable para almacenar el valor seleccionado
+  String? _selectedSomos;
 
   TimeOfDay? _openingTime;
   TimeOfDay? _closingTime;
@@ -58,26 +59,23 @@ class _CreateInstitutionScreenState extends State<CreateInstitutionScreen> {
 
   void _saveInstitution() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Aquí puedes manejar la lógica para guardar la institución
-      // Ejemplo: enviar los datos a una API o guardar en una base de datos local
-
-      // Para fines de demostración, solo mostramos un diálogo con los datos ingresados
       showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Institución creada'),
-            content: Text('Nombre: ${_nameController.text}\n'
-                'Dirección: ${_addressController.text}\n'
-                'Ciudad: ${_cityController.text}\n'
-                'PLZ: ${_plzController.text}\n'
-                'Horario: ${_openingTime?.format(context)} - ${_closingTime?.format(context)}\n'
-                'Latitud: ${_latitudeController.text}\n'
-                'Longitud: ${_longitudeController.text}\n'
-                'Avatar: ${_avatarController.text}\n'
-                'Background Image: ${_backgroundImageController.text}\n'
-                'Percent: ${_percentController.text}%\n'
-                'Somos: $_selectedSomos'),
+            title: Text(translate(context, 'institutionCreated') ?? 'Institución creada'),
+            content: Text(
+                '${translate(context, 'name')}: ${_nameController.text}\n'
+                    '${translate(context, 'address')}: ${_addressController.text}\n'
+                    '${translate(context, 'city')}: ${_cityController.text}\n'
+                    '${translate(context, 'plz')}: ${_plzController.text}\n'
+                    '${translate(context, 'schedule')}: ${_openingTime?.format(context)} - ${_closingTime?.format(context)}\n'
+                    '${translate(context, 'latitude')}: ${_latitudeController.text}\n'
+                    '${translate(context, 'longitude')}: ${_longitudeController.text}\n'
+                    '${translate(context, 'avatarUrl')}: ${_avatarController.text}\n'
+                    '${translate(context, 'backgroundImageUrl')}: ${_backgroundImageController.text}\n'
+                    '${translate(context, 'percent')}: ${_percentController.text}%\n'
+                    '${translate(context, 'somos')}: $_selectedSomos'),
             actions: <Widget>[
               TextButton(
                 child: Text('OK'),
@@ -96,7 +94,7 @@ class _CreateInstitutionScreenState extends State<CreateInstitutionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Crear Nueva Institución'),
+        title: Text(translate(context, 'createNewInstitution') ?? 'Crear Nueva Institución'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -106,42 +104,42 @@ class _CreateInstitutionScreenState extends State<CreateInstitutionScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'Nombre'),
+                decoration: InputDecoration(labelText: translate(context, 'name') ?? 'Nombre'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa un nombre';
+                    return translate(context, 'pleaseEnterName') ?? 'Por favor ingresa un nombre';
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _addressController,
-                decoration: InputDecoration(labelText: 'Dirección'),
+                decoration: InputDecoration(labelText: translate(context, 'address') ?? 'Dirección'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa una dirección';
+                    return translate(context, 'pleaseEnterAddress') ?? 'Por favor ingresa una dirección';
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _cityController,
-                decoration: InputDecoration(labelText: 'Ciudad'),
+                decoration: InputDecoration(labelText: translate(context, 'city') ?? 'Ciudad'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa una ciudad';
+                    return translate(context, 'pleaseEnterCity') ?? 'Por favor ingresa una ciudad';
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _plzController,
-                decoration: InputDecoration(labelText: 'PLZ'),
+                decoration: InputDecoration(labelText: translate(context, 'plz') ?? 'PLZ'),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa el código postal (PLZ)';
+                    return translate(context, 'pleaseEnterPLZ') ?? 'Por favor ingresa el código postal (PLZ)';
                   }
                   return null;
                 },
@@ -151,12 +149,12 @@ class _CreateInstitutionScreenState extends State<CreateInstitutionScreen> {
                   Expanded(
                     child: TextFormField(
                       controller: _latitudeController,
-                      decoration: InputDecoration(labelText: 'Latitud'),
+                      decoration: InputDecoration(labelText: translate(context, 'latitude') ?? 'Latitud'),
                       keyboardType: TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Por favor ingresa la latitud';
+                          return translate(context, 'pleaseEnterLatitude') ?? 'Por favor ingresa la latitud';
                         }
                         return null;
                       },
@@ -166,12 +164,12 @@ class _CreateInstitutionScreenState extends State<CreateInstitutionScreen> {
                   Expanded(
                     child: TextFormField(
                       controller: _longitudeController,
-                      decoration: InputDecoration(labelText: 'Longitud'),
+                      decoration: InputDecoration(labelText: translate(context, 'longitude') ?? 'Longitud'),
                       keyboardType: TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Por favor ingresa la longitud';
+                          return translate(context, 'pleaseEnterLongitude') ?? 'Por favor ingresa la longitud';
                         }
                         return null;
                       },
@@ -181,38 +179,38 @@ class _CreateInstitutionScreenState extends State<CreateInstitutionScreen> {
               ),
               TextFormField(
                 controller: _avatarController,
-                decoration: InputDecoration(labelText: 'Avatar (URL)'),
+                decoration: InputDecoration(labelText: translate(context, 'avatarUrl') ?? 'Avatar (URL)'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa la URL del avatar';
+                    return translate(context, 'pleaseEnterAvatarUrl') ?? 'Por favor ingresa la URL del avatar';
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _backgroundImageController,
-                decoration: InputDecoration(labelText: 'Imagen de Fondo (URL)'),
+                decoration: InputDecoration(labelText: translate(context, 'backgroundImageUrl') ?? 'Imagen de Fondo (URL)'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa la URL de la imagen de fondo';
+                    return translate(context, 'pleaseEnterBackgroundImageUrl') ?? 'Por favor ingresa la URL de la imagen de fondo';
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _percentController,
-                decoration: InputDecoration(labelText: 'Percent'),
+                decoration: InputDecoration(labelText: translate(context, 'percent') ?? 'Percent'),
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa un porcentaje';
+                    return translate(context, 'pleaseEnterPercent') ?? 'Por favor ingresa un porcentaje';
                   }
                   return null;
                 },
               ),
               DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Somos'),
+                decoration: InputDecoration(labelText: translate(context, 'somos') ?? 'Somos'),
                 value: _selectedSomos,
                 items: [
                   DropdownMenuItem(value: 'Lübeck', child: Text('Lübeck')),
@@ -226,7 +224,7 @@ class _CreateInstitutionScreenState extends State<CreateInstitutionScreen> {
                 },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor selecciona una opción de Somos';
+                    return translate(context, 'pleaseSelectSomos') ?? 'Por favor selecciona una opción de Somos';
                   }
                   return null;
                 },
@@ -236,11 +234,11 @@ class _CreateInstitutionScreenState extends State<CreateInstitutionScreen> {
                 children: [
                   Text(
                     _openingTime != null
-                        ? 'Apertura: ${_openingTime!.format(context)}'
-                        : 'Selecciona hora de apertura',
+                        ? '${translate(context, 'openingTime') ?? 'Apertura'}: ${_openingTime!.format(context)}'
+                        : translate(context, 'selectOpeningTime') ?? 'Selecciona hora de apertura',
                   ),
                   CupertinoButton(
-                    child: Text('Elegir'),
+                    child: Text(translate(context, 'choose') ?? 'Elegir'),
                     onPressed: () => _selectTime(context, true),
                   ),
                 ],
@@ -250,18 +248,18 @@ class _CreateInstitutionScreenState extends State<CreateInstitutionScreen> {
                 children: [
                   Text(
                     _closingTime != null
-                        ? 'Cierre: ${_closingTime!.format(context)}'
-                        : 'Selecciona hora de cierre',
+                        ? '${translate(context, 'closingTime') ?? 'Cierre'}: ${_closingTime!.format(context)}'
+                        : translate(context, 'selectClosingTime') ?? 'Selecciona hora de cierre',
                   ),
                   CupertinoButton(
-                    child: Text('Elegir'),
+                    child: Text(translate(context, 'choose') ?? 'Elegir'),
                     onPressed: () => _selectTime(context, false),
                   ),
                 ],
               ),
               SizedBox(height: 20),
               CupertinoButton.filled(
-                child: Text('Guardar Institución'),
+                child: Text(translate(context, 'saveInstitution') ?? 'Guardar Institución'),
                 onPressed: _saveInstitution,
               ),
             ],
