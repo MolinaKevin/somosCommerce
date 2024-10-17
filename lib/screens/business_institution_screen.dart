@@ -20,6 +20,7 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
     with AutomaticKeepAliveClientMixin {
   int _selectedSegment = 0;
   List<bool> _isTileExpanded = [];
+  String? _tempSelectedLanguage; // Variable para almacenar el idioma temporalmente
 
   @override
   bool get wantKeepAlive => true;
@@ -40,11 +41,11 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
     _initializeTileExpansionState();
   }
 
-  // Cambiar el idioma
-  void _changeLanguage(String? selectedLanguage) {
-    if (selectedLanguage != null) {
+  // Función para confirmar el cambio de idioma
+  void _confirmLanguageChange() {
+    if (_tempSelectedLanguage != null) {
       Provider.of<LanguageProvider>(context, listen: false)
-          .updateLanguage(selectedLanguage); // Cambiar idioma
+          .updateLanguage(_tempSelectedLanguage!); // Cambiar idioma
       setState(() {});
     }
   }
@@ -109,17 +110,32 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(translate(context, 'selectLanguage') ?? 'Seleccionar idioma'),
-                  DropdownButton<String>(
-                    value: languageProvider.currentLanguage, // Usamos currentLanguage
-                    onChanged: _changeLanguage,
-                    items: [
-                      DropdownMenuItem(
-                        value: 'es',
-                        child: Text('Español'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButton<String>(
+                          value: _tempSelectedLanguage ?? languageProvider.currentLanguage, // Usamos el idioma temporal o el actual
+                          onChanged: (newLanguage) {
+                            setState(() {
+                              _tempSelectedLanguage = newLanguage; // Guardamos el idioma temporalmente
+                            });
+                          },
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'es',
+                              child: Text('Español'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'en',
+                              child: Text('English'),
+                            ),
+                          ],
+                        ),
                       ),
-                      DropdownMenuItem(
-                        value: 'en',
-                        child: Text('English'),
+                      SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: _confirmLanguageChange, // Confirmar el cambio de idioma
+                        child: Text(translate(context, 'confirm') ?? 'Confirmar'),
                       ),
                     ],
                   ),
