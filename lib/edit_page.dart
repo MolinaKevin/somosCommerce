@@ -41,15 +41,15 @@ class _EditPageState extends State<EditPage> {
             items: [
               BottomNavigationBarItem(
                 icon: Icon(CupertinoIcons.circle),
-                label: translate(context, 'tab1') ?? 'Tab 1',  // Modificado
+                label: translate(context, 'tab1') ?? 'Tab 1',
               ),
               BottomNavigationBarItem(
                 icon: Icon(CupertinoIcons.list_bullet),
-                label: translate(context, 'tab2') ?? 'Tab 2',  // Modificado
+                label: translate(context, 'tab2') ?? 'Tab 2',
               ),
               BottomNavigationBarItem(
                 icon: Icon(CupertinoIcons.profile_circled),
-                label: translate(context, 'tab3') ?? 'Tab 3',  // Modificado
+                label: translate(context, 'tab3') ?? 'Tab 3',
               ),
             ],
             currentIndex: _currentIndex,

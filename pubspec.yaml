@@ -72,6 +72,7 @@ flutter:
   assets:
     - assets/l10n/en.json
     - assets/l10n/es.json
+    - assets/l10n/de.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -10,7 +10,7 @@ import 'sub_tabs/avatar_section.dart';
 import 'sub_tabs/background_image_carousel.dart';
 import 'sub_tabs/time_picker_section.dart';
 import 'package:flutter/services.dart';
-import '../helpers/translations_helper.dart'; // Importa el helper de traducción
+import '../helpers/translations_helper.dart';
 
 class Tab3 extends StatefulWidget {
   final Map<String, dynamic> entity;
@@ -24,7 +24,6 @@ class Tab3 extends StatefulWidget {
 class _Tab3State extends State<Tab3> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controladores para los campos de texto
   late TextEditingController _nameController;
   late TextEditingController _addressController;
   late TextEditingController _cityController;
@@ -89,7 +88,7 @@ class _Tab3State extends State<Tab3> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(translate(context, 'enterAvatarUrl') ?? 'Ingresar URL del Avatar'),
+          title: Text(translate(context, 'avatar.enterAvatarUrl') ?? 'Enter Avatar URL'),
           content: TextField(
             controller: urlController,
             decoration: InputDecoration(hintText: 'https://example.com/avatar.png'),
@@ -102,7 +101,7 @@ class _Tab3State extends State<Tab3> {
                 });
                 Navigator.of(context).pop();
               },
-              child: Text(translate(context, 'save') ?? 'Guardar'),
+              child: Text(translate(context, 'forms.save') ?? 'Save'),
             ),
           ],
         );
@@ -125,10 +124,10 @@ class _Tab3State extends State<Tab3> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(translate(context, 'enterBackgroundImageUrl') ?? 'Ingresar URL de la Imagen de Fondo'),
+          title: Text(translate(context, 'backgroundImage.enterBackgroundImageUrl') ?? 'Enter Background Image URL'),
           content: TextField(
             controller: urlController,
-            decoration: InputDecoration(hintText: 'https://example.com/fondo.png'),
+            decoration: InputDecoration(hintText: 'https://example.com/background.png'),
           ),
           actions: [
             TextButton(
@@ -138,7 +137,7 @@ class _Tab3State extends State<Tab3> {
                 });
                 Navigator.of(context).pop();
               },
-              child: Text(translate(context, 'save') ?? 'Guardar'),
+              child: Text(translate(context, 'forms.save') ?? 'Save'),
             ),
           ],
         );
@@ -194,8 +193,8 @@ class _Tab3State extends State<Tab3> {
             context: context,
             builder: (context) {
               return CupertinoAlertDialog(
-                title: Text(translate(context, 'commerceUpdated') ?? 'Comercio actualizado'),
-                content: Text(translate(context, 'commerceUpdatedSuccessfully') ?? 'El comercio ha sido actualizado exitosamente.'),
+                title: Text(translate(context, 'business.commerceUpdated') ?? 'Business Updated'),
+                content: Text(translate(context, 'business.commerceUpdatedSuccessfully') ?? 'The business has been successfully updated.'),
                 actions: <Widget>[
                   CupertinoDialogAction(
                     child: Text('OK'),
@@ -216,7 +215,7 @@ class _Tab3State extends State<Tab3> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text(translate(context, 'editCommerce') ?? 'Editar Comercio'),
+        middle: Text(translate(context, 'business.editCommerce') ?? 'Edit Business'),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -224,7 +223,6 @@ class _Tab3State extends State<Tab3> {
           key: _formKey,
           child: ListView(
             children: [
-              // Sección de Avatar
               AvatarSection(
                 avatarController: _avatarController,
                 onPickImage: _pickImage,
@@ -232,25 +230,24 @@ class _Tab3State extends State<Tab3> {
               ),
               SizedBox(height: 16),
 
-              _buildTextFieldWithLabel(label: translate(context, 'name') ?? 'Nombre:', controller: _nameController),
+              _buildTextFieldWithLabel(label: translate(context, 'entity_fields.name') ?? 'Name:', controller: _nameController),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: translate(context, 'address') ?? 'Dirección:', controller: _addressController),
+              _buildTextFieldWithLabel(label: translate(context, 'entity_fields.address') ?? 'Address:', controller: _addressController),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: translate(context, 'city') ?? 'Ciudad:', controller: _cityController),
+              _buildTextFieldWithLabel(label: translate(context, 'entity_fields.city') ?? 'City:', controller: _cityController),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: translate(context, 'plz') ?? 'PLZ:', controller: _plzController, keyboardType: TextInputType.number, inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
+              _buildTextFieldWithLabel(label: translate(context, 'entity_fields.plz') ?? 'PLZ:', controller: _plzController, keyboardType: TextInputType.number, inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
               SizedBox(height: 16),
 
-              // Latitud y Longitud con botón de selección en el mapa
               Row(
                 children: [
                   Expanded(
                     flex: 7,
-                    child: _buildTextFieldWithLabel(label: translate(context, 'latitude') ?? 'Latitud:', controller: _latitudeController, keyboardType: TextInputType.numberWithOptions(decimal: true), inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
+                    child: _buildTextFieldWithLabel(label: translate(context, 'entity_fields.latitude') ?? 'Latitude:', controller: _latitudeController, keyboardType: TextInputType.numberWithOptions(decimal: true), inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
                   ),
                   Expanded(
                     flex: 7,
-                    child: _buildTextFieldWithLabel(label: translate(context, 'longitude') ?? 'Longitud:', controller: _longitudeController, keyboardType: TextInputType.numberWithOptions(decimal: true), inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
+                    child: _buildTextFieldWithLabel(label: translate(context, 'entity_fields.longitude') ?? 'Longitude:', controller: _longitudeController, keyboardType: TextInputType.numberWithOptions(decimal: true), inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
                   ),
                   IconButton(
                     icon: Icon(Icons.map),
@@ -260,7 +257,6 @@ class _Tab3State extends State<Tab3> {
               ),
               SizedBox(height: 16),
 
-              // Carrusel de Imágenes de Fondo
               BackgroundImageCarousel(
                 backgroundImages: _backgroundImages,
                 currentIndex: _currentBackgroundIndex,
@@ -272,7 +268,7 @@ class _Tab3State extends State<Tab3> {
                       _backgroundImages.add(imageUrl);
                     });
                   } else {
-                    print("No se subió ninguna imagen.");
+                    print("No image uploaded.");
                   }
                 },
                 onSelectImage: (index) {
@@ -284,10 +280,9 @@ class _Tab3State extends State<Tab3> {
 
               SizedBox(height: 16),
 
-              _buildTextFieldWithLabel(label: translate(context, 'percent') ?? 'Percent:', controller: _percentController, readOnly: true),
+              _buildTextFieldWithLabel(label: translate(context, 'entity_fields.percent') ?? 'Percent:', controller: _percentController, readOnly: true),
               SizedBox(height: 16),
 
-              // Sección de Selección de Horarios
               TimePickerSection(
                 openingTime: _openingTime,
                 closingTime: _closingTime,
@@ -305,7 +300,7 @@ class _Tab3State extends State<Tab3> {
               SizedBox(height: 20),
 
               CupertinoButton.filled(
-                child: Text(translate(context, 'saveChanges') ?? 'Guardar Cambios'),
+                child: Text(translate(context, 'forms.saveChanges') ?? 'Save Changes'),
                 onPressed: _saveCommerce,
               ),
 
@@ -313,7 +308,7 @@ class _Tab3State extends State<Tab3> {
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: CupertinoButton.filled(
-                    child: Text(widget.entity['active'] ? (translate(context, 'deactivateCommerce') ?? 'Desactivar Comercio') : (translate(context, 'activateCommerce') ?? 'Activar Comercio')),
+                    child: Text(widget.entity['active'] ? (translate(context, 'business.deactivateCommerce') ?? 'Deactivate Business') : (translate(context, 'business.activateCommerce') ?? 'Activate Business')),
                     onPressed: () async {
                       final authService = Provider.of<AuthService>(context, listen: false);
                       final token = await authService.getToken();

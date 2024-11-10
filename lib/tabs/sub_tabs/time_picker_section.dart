@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../../helpers/translations_helper.dart'; // Importa el helper de traducción
+import '../../helpers/translations_helper.dart';
 
 class TimePickerSection extends StatelessWidget {
   final TimeOfDay? openingTime;
@@ -24,11 +24,11 @@ class TimePickerSection extends StatelessWidget {
           children: [
             Text(
               openingTime != null
-                  ? '${translate(context, 'openingTime') ?? 'Apertura'}: ${openingTime!.format(context)}'
-                  : translate(context, 'selectOpeningTime') ?? 'Selecciona hora de apertura',
+                  ? '${translate(context, 'time.openingTime') ?? 'Opening Time'}: ${openingTime!.format(context)}'
+                  : translate(context, 'time.selectOpeningTime') ?? 'Select Opening Time',
             ),
             CupertinoButton(
-              child: Text(translate(context, 'choose') ?? 'Elegir'),
+              child: Text(translate(context, 'time.choose') ?? 'Choose'),
               onPressed: () async {
                 final pickedTime = await showTimePicker(
                   context: context,
@@ -46,11 +46,11 @@ class TimePickerSection extends StatelessWidget {
           children: [
             Text(
               closingTime != null
-                  ? '${translate(context, 'closingTime') ?? 'Cierre'}: ${closingTime!.format(context)}'
-                  : translate(context, 'selectClosingTime') ?? 'Selecciona hora de cierre',
+                  ? '${translate(context, 'time.closingTime') ?? 'Closing Time'}: ${closingTime!.format(context)}'
+                  : translate(context, 'time.selectClosingTime') ?? 'Select Closing Time',
             ),
             CupertinoButton(
-              child: Text(translate(context, 'choose') ?? 'Elegir'),
+              child: Text(translate(context, 'time.choose') ?? 'Choose'),
               onPressed: () async {
                 final pickedTime = await showTimePicker(
                   context: context,

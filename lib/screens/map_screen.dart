@@ -1,10 +1,10 @@
-import 'dart:async'; // Necesario para usar Timer
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../helpers/translations_helper.dart'; // Importa el helper de traducción
+import '../helpers/translations_helper.dart';
 
 class MapScreen extends StatefulWidget {
   final LatLng initialLocation;
@@ -20,9 +20,9 @@ class _MapScreenState extends State<MapScreen> {
   MapController _mapController = MapController();
   TextEditingController _searchController = TextEditingController();
   double _currentZoom = 13.0;
-  List<dynamic> _searchSuggestions = []; // Para almacenar las sugerencias de autocompletar
-  Timer? _debounce; // Variable para manejar el temporizador
-  bool _isLoading = false; // Variable para manejar el estado de carga
+  List<dynamic> _searchSuggestions = [];
+  Timer? _debounce;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -32,21 +32,21 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   void dispose() {
-    _debounce?.cancel(); // Cancelar el temporizador al desmontar el widget
+    _debounce?.cancel();
     super.dispose();
   }
 
   void _selectLocation() {
     setState(() {
       _pickedLocation = _mapController.center;
-      print('Latitud: ${_pickedLocation.latitude}, Longitud: ${_pickedLocation.longitude}');
+      print('Latitude: ${_pickedLocation.latitude}, Longitude: ${_pickedLocation.longitude}');
     });
   }
 
-  // Método para buscar lugar por nombre usando Nominatim
+  // Method to search place by name using Nominatim
   Future<void> _searchPlace(String query) async {
     setState(() {
-      _isLoading = true; // Mostrar animación de carga
+      _isLoading = true;
     });
     final url = Uri.parse(
         'https://nominatim.openstreetmap.org/search?q=$query&format=json&addressdetails=1&limit=5');
@@ -61,18 +61,18 @@ class _MapScreenState extends State<MapScreen> {
         _mapController.move(LatLng(lat, lon), _currentZoom);
       }
     } else {
-      print('Error al buscar la ubicación');
+      print('Error searching location');
     }
     setState(() {
-      _isLoading = false; // Ocultar animación de carga cuando termine la búsqueda
+      _isLoading = false;
     });
   }
 
-  // Método para actualizar las sugerencias de búsqueda usando Nominatim
+  // Method to update search suggestions using Nominatim
   Future<void> _updateSearchSuggestions(String query) async {
     if (query.isNotEmpty) {
       setState(() {
-        _isLoading = true; // Mostrar animación de carga mientras se buscan sugerencias
+        _isLoading = true;
       });
       final url = Uri.parse(
           'https://nominatim.openstreetmap.org/search?q=$query&format=json&addressdetails=1&limit=5');
@@ -84,10 +84,10 @@ class _MapScreenState extends State<MapScreen> {
           _searchSuggestions = results;
         });
       } else {
-        print('Error al obtener sugerencias de búsqueda');
+        print('Error fetching search suggestions');
       }
       setState(() {
-        _isLoading = false; // Ocultar animación de carga cuando termine la búsqueda
+        _isLoading = false;
       });
     } else {
       setState(() {
@@ -107,7 +107,7 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(translate(context, 'selectLocation') ?? 'Seleccionar ubicación'),
+        title: Text(translate(context, 'map.selectLocation') ?? 'Select location'),
         actions: [
           IconButton(
             icon: Icon(Icons.check),
@@ -148,7 +148,7 @@ class _MapScreenState extends State<MapScreen> {
               size: 40,
             ),
           ),
-          // Caja de búsqueda flotante
+          // Floating search box
           Positioned(
             top: 20,
             left: 10,
@@ -173,13 +173,13 @@ class _MapScreenState extends State<MapScreen> {
                         child: TextField(
                           controller: _searchController,
                           decoration: InputDecoration(
-                            hintText: translate(context, 'searchPlace') ?? 'Buscar lugar...',
+                            hintText: translate(context, 'map.searchPlace') ?? 'Search place...',
                             border: InputBorder.none,
                           ),
-                          onChanged: _onSearchChanged, // Usar el método con debounce
+                          onChanged: _onSearchChanged,
                           onSubmitted: (value) {
                             _searchPlace(value);
-                            _searchSuggestions.clear(); // Limpiar las sugerencias después de la búsqueda
+                            _searchSuggestions.clear();
                           },
                         ),
                       ),
@@ -209,7 +209,7 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                     child: MediaQuery.removePadding(
                       context: context,
-                      removeBottom: true, // Eliminar el espacio en blanco al final
+                      removeBottom: true,
                       child: ListView.builder(
                         shrinkWrap: true,
                         itemCount: _searchSuggestions.length,
@@ -232,9 +232,9 @@ class _MapScreenState extends State<MapScreen> {
               ],
             ),
           ),
-          // Controles de zoom
+          // Zoom controls
           Positioned(
-            bottom: 50, // Separarlo de la barra inferior
+            bottom: 50,
             right: 10,
             child: Column(
               children: [

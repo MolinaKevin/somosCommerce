@@ -11,9 +11,11 @@ class LanguageProvider with ChangeNotifier {
 
   Future<void> updateLanguage(String newLanguage) async {
     _currentLanguage = newLanguage;
+    print('Idioma actualizado a: $_currentLanguage');
     notifyListeners();
     await _storage.write(key: 'language', value: newLanguage);
   }
+
 
   Future<void> loadLanguage() async {
     final savedLanguage = await _storage.read(key: 'language');

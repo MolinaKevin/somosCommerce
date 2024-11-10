@@ -11,7 +11,7 @@ import 'sub_tabs/avatar_section.dart';
 import 'sub_tabs/background_image_carousel.dart';
 import 'sub_tabs/time_picker_section.dart';
 import 'package:flutter/services.dart';
-import '../helpers/translations_helper.dart'; // Importa el helper de traducción
+import '../helpers/translations_helper.dart';
 
 class TabInstitution3 extends StatefulWidget {
   final Map<String, dynamic> entity;
@@ -25,7 +25,6 @@ class TabInstitution3 extends StatefulWidget {
 class _TabInstitution3State extends State<TabInstitution3> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controladores para los campos de texto
   late TextEditingController _nameController;
   late TextEditingController _addressController;
   late TextEditingController _cityController;
@@ -52,15 +51,11 @@ class _TabInstitution3State extends State<TabInstitution3> {
     _nameController = TextEditingController(text: widget.entity['name']);
     _addressController = TextEditingController(text: widget.entity['address']);
     _cityController = TextEditingController(text: widget.entity['city']);
-    _plzController =
-        TextEditingController(text: widget.entity['plz'].toString());
-    _latitudeController =
-        TextEditingController(text: widget.entity['latitude'].toString());
-    _longitudeController =
-        TextEditingController(text: widget.entity['longitude'].toString());
+    _plzController = TextEditingController(text: widget.entity['plz'].toString());
+    _latitudeController = TextEditingController(text: widget.entity['latitude'].toString());
+    _longitudeController = TextEditingController(text: widget.entity['longitude'].toString());
     _avatarController = TextEditingController(text: widget.entity['avatar']);
-    _percentController =
-        TextEditingController(text: widget.entity['percent']?.toString() ?? '');
+    _percentController = TextEditingController(text: widget.entity['percent']?.toString() ?? '');
 
     _selectedSomos = widget.entity['somos_id']?.toString();
     _backgroundImages.add(widget.entity['background_image']);
@@ -93,8 +88,7 @@ class _TabInstitution3State extends State<TabInstitution3> {
   }
 
   Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(
-        source: ImageSource.gallery);
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _avatarController.text = pickedFile.path;
@@ -108,12 +102,10 @@ class _TabInstitution3State extends State<TabInstitution3> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(
-              translate(context, 'enterAvatarUrl') ?? 'Enter Avatar URL'),
+          title: Text(translate(context, 'avatar.enterAvatarUrl') ?? 'Enter Avatar URL'),
           content: TextField(
             controller: urlController,
-            decoration: InputDecoration(
-                hintText: 'https://example.com/avatar.png'),
+            decoration: InputDecoration(hintText: 'https://example.com/avatar.png'),
           ),
           actions: [
             TextButton(
@@ -123,7 +115,7 @@ class _TabInstitution3State extends State<TabInstitution3> {
                 });
                 Navigator.of(context).pop();
               },
-              child: Text(translate(context, 'save') ?? 'Save'),
+              child: Text(translate(context, 'forms.save') ?? 'Save'),
             ),
           ],
         );
@@ -146,12 +138,10 @@ class _TabInstitution3State extends State<TabInstitution3> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(translate(context, 'enterBackgroundImageUrl') ??
-              'Enter Background Image URL'),
+          title: Text(translate(context, 'backgroundImage.enterBackgroundImageUrl') ?? 'Enter Background Image URL'),
           content: TextField(
             controller: urlController,
-            decoration: InputDecoration(
-                hintText: 'https://example.com/background.png'),
+            decoration: InputDecoration(hintText: 'https://example.com/background.png'),
           ),
           actions: [
             TextButton(
@@ -161,7 +151,7 @@ class _TabInstitution3State extends State<TabInstitution3> {
                 });
                 Navigator.of(context).pop();
               },
-              child: Text(translate(context, 'save') ?? 'Save'),
+              child: Text(translate(context, 'forms.save') ?? 'Save'),
             ),
           ],
         );
@@ -172,13 +162,12 @@ class _TabInstitution3State extends State<TabInstitution3> {
   Future<void> _openMap() async {
     final LatLng? selectedLocation = await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) =>
-            MapScreen(
-              initialLocation: LatLng(
-                double.tryParse(_latitudeController.text) ?? 0.0,
-                double.tryParse(_longitudeController.text) ?? 0.0,
-              ),
-            ),
+        builder: (context) => MapScreen(
+          initialLocation: LatLng(
+            double.tryParse(_latitudeController.text) ?? 0.0,
+            double.tryParse(_longitudeController.text) ?? 0.0,
+          ),
+        ),
       ),
     );
 
@@ -211,18 +200,14 @@ class _TabInstitution3State extends State<TabInstitution3> {
       final token = await authService.getToken();
 
       if (token != null) {
-        final success = await InstitutionService().updateInstitution(
-            token, widget.entity['id'], institutionData);
+        final success = await InstitutionService().updateInstitution(token, widget.entity['id'], institutionData);
         if (success) {
           showDialog(
             context: context,
             builder: (context) {
               return CupertinoAlertDialog(
-                title: Text(translate(context, 'institutionUpdated') ??
-                    'Institución actualizada'),
-                content: Text(
-                    translate(context, 'institutionUpdatedSuccessfully') ??
-                        'La institución ha sido actualizada exitosamente.'),
+                title: Text(translate(context, 'institution.institutionUpdated') ?? 'Institution Updated'),
+                content: Text(translate(context, 'institution.institutionUpdatedSuccessfully') ?? 'The institution has been successfully updated.'),
                 actions: <Widget>[
                   CupertinoDialogAction(
                     child: Text('OK'),
@@ -244,8 +229,7 @@ class _TabInstitution3State extends State<TabInstitution3> {
       children: [
         Expanded(
           flex: 3,
-          child: Text(translate(context, 'somos') ?? 'Somos:',
-              style: TextStyle(fontSize: 14)),
+          child: Text(translate(context, 'institution.somos') ?? 'Somos:', style: TextStyle(fontSize: 14)),
         ),
         Expanded(
           flex: 7,
@@ -274,8 +258,7 @@ class _TabInstitution3State extends State<TabInstitution3> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text(
-            translate(context, 'editInstitution') ?? 'Editar Institución'),
+        middle: Text(translate(context, 'institution.editInstitution') ?? 'Edit Institution'),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -291,19 +274,19 @@ class _TabInstitution3State extends State<TabInstitution3> {
               SizedBox(height: 16),
 
               _buildTextFieldWithLabel(
-                  label: translate(context, 'name') ?? 'Nombre:',
+                  label: translate(context, 'entity_fields.name') ?? 'Name:',
                   controller: _nameController),
               SizedBox(height: 16),
               _buildTextFieldWithLabel(
-                  label: translate(context, 'address') ?? 'Dirección:',
+                  label: translate(context, 'entity_fields.address') ?? 'Address:',
                   controller: _addressController),
               SizedBox(height: 16),
               _buildTextFieldWithLabel(
-                  label: translate(context, 'city') ?? 'Ciudad:',
+                  label: translate(context, 'entity_fields.city') ?? 'City:',
                   controller: _cityController),
               SizedBox(height: 16),
               _buildTextFieldWithLabel(
-                  label: translate(context, 'plz') ?? 'PLZ:',
+                  label: translate(context, 'entity_fields.plz') ?? 'PLZ:',
                   controller: _plzController,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
@@ -314,24 +297,18 @@ class _TabInstitution3State extends State<TabInstitution3> {
                   Expanded(
                     flex: 7,
                     child: _buildTextFieldWithLabel(
-                        label: translate(context, 'latitude') ?? 'Latitud:',
+                        label: translate(context, 'entity_fields.latitude') ?? 'Latitude:',
                         controller: _latitudeController,
-                        keyboardType: TextInputType.numberWithOptions(
-                            decimal: true),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
-                        ]),
+                        keyboardType: TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
                   ),
                   Expanded(
                     flex: 7,
                     child: _buildTextFieldWithLabel(
-                        label: translate(context, 'longitude') ?? 'Longitud:',
+                        label: translate(context, 'entity_fields.longitude') ?? 'Longitude:',
                         controller: _longitudeController,
-                        keyboardType: TextInputType.numberWithOptions(
-                            decimal: true),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
-                        ]),
+                        keyboardType: TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
                   ),
                   IconButton(
                     icon: Icon(Icons.map),
@@ -355,7 +332,7 @@ class _TabInstitution3State extends State<TabInstitution3> {
                       _backgroundImages.add(imageUrl);
                     });
                   } else {
-                    print("No se subió ninguna imagen.");
+                    print("No image uploaded.");
                   }
                 },
                 onSelectImage: (index) {
@@ -368,7 +345,7 @@ class _TabInstitution3State extends State<TabInstitution3> {
               SizedBox(height: 16),
 
               _buildTextFieldWithLabel(
-                  label: translate(context, 'percent') ?? 'Percent:',
+                  label: translate(context, 'entity_fields.percent') ?? 'Percent:',
                   controller: _percentController,
                   readOnly: true),
               SizedBox(height: 16),
@@ -390,8 +367,7 @@ class _TabInstitution3State extends State<TabInstitution3> {
               SizedBox(height: 20),
 
               CupertinoButton.filled(
-                child: Text(
-                    translate(context, 'saveChanges') ?? 'Guardar Cambios'),
+                child: Text(translate(context, 'forms.saveChanges') ?? 'Save Changes'),
                 onPressed: _saveInstitution,
               ),
 
@@ -400,21 +376,16 @@ class _TabInstitution3State extends State<TabInstitution3> {
                   padding: const EdgeInsets.only(top: 16.0),
                   child: CupertinoButton.filled(
                     child: Text(widget.entity['active']
-                        ? translate(context, 'deactivateInstitution') ??
-                        'Desactivar Institución'
-                        : translate(context, 'activateInstitution') ??
-                        'Activar Institución'),
+                        ? translate(context, 'institution.deactivateInstitution') ?? 'Deactivate Institution'
+                        : translate(context, 'institution.activateInstitution') ?? 'Activate Institution'),
                     onPressed: () async {
-                      final authService = Provider.of<AuthService>(
-                          context, listen: false);
+                      final authService = Provider.of<AuthService>(context, listen: false);
                       final token = await authService.getToken();
 
                       if (token != null) {
                         final success = widget.entity['active']
-                            ? await InstitutionService().deactivateInstitution(
-                            token, widget.entity['id'])
-                            : await InstitutionService().activateInstitution(
-                            token, widget.entity['id']);
+                            ? await InstitutionService().deactivateInstitution(token, widget.entity['id'])
+                            : await InstitutionService().activateInstitution(token, widget.entity['id']);
 
                         if (success) {
                           setState(() {
@@ -433,8 +404,7 @@ class _TabInstitution3State extends State<TabInstitution3> {
   }
 
   Widget _buildTextFieldWithLabel(
-      {required String label, required TextEditingController controller, bool readOnly = false, TextInputType? keyboardType, List<
-          TextInputFormatter>? inputFormatters}) {
+      {required String label, required TextEditingController controller, bool readOnly = false, TextInputType? keyboardType, List<TextInputFormatter>? inputFormatters}) {
     return Row(
       children: [
         Expanded(

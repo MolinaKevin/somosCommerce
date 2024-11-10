@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/institution_movement_service.dart';
 import '../services/auth_service.dart';
-import '../helpers/translations_helper.dart'; // Importa el helper de traducciones
+import '../helpers/translations_helper.dart';
 
 class TabInstitution2 extends StatefulWidget {
   final Map<String, dynamic> entity;
@@ -39,11 +39,10 @@ class _TabInstitution2State extends State<TabInstitution2> {
             ...contributionsMade.map((contribution) => {...contribution, 'type': 'contribution_made'}),
           ];
 
-          // Ordenar los movimientos por fecha (created_at)
           movements.sort((a, b) {
             final dateA = DateTime.parse(a['created_at']);
             final dateB = DateTime.parse(b['created_at']);
-            return dateB.compareTo(dateA); // Orden descendente (más reciente primero)
+            return dateB.compareTo(dateA);
           });
 
           isLoading = false;
@@ -53,7 +52,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
           isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(translate(context, 'authTokenError') ?? 'No se pudo obtener el token de autenticación')),
+          SnackBar(content: Text(translate(context, 'errors.authTokenError') ?? 'Could not obtain the authentication token')),
         );
       }
     } catch (error) {
@@ -61,7 +60,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(translate(context, 'movementsLoadError') ?? 'Error al cargar los movimientos: $error')),
+        SnackBar(content: Text(translate(context, 'movements.movementsLoadError') ?? 'Error loading movements: $error')),
       );
     }
   }
@@ -88,27 +87,27 @@ class _TabInstitution2State extends State<TabInstitution2> {
 
   String _getMovementDescription(Map<String, dynamic> movement) {
     String formatDate(String? date) {
-      if (date == null) return translate(context, 'notAvailable') ?? 'N/A';
+      if (date == null) return translate(context, 'movements.notAvailable') ?? 'N/A';
       try {
         final parsedDate = DateTime.parse(date);
-        return DateFormat('dd/MM/yyyy HH:mm').format(parsedDate); // Formato: día/mes/año horas:minutos
+        return DateFormat('dd/MM/yyyy HH:mm').format(parsedDate);
       } catch (e) {
-        return translate(context, 'invalidDate') ?? 'Fecha inválida';
+        return translate(context, 'errors.invalidDate') ?? 'Invalid date';
       }
     }
 
     switch (movement['type']) {
       case 'donation_received':
-        return '${translate(context, 'donationFrom') ?? 'Donación de'}: ${movement['donor_name'] ?? 'N/A'}\n${translate(context, 'date') ?? 'Fecha'}: ${formatDate(movement['created_at'])}';
+        return '${translate(context, 'movements.donationFrom') ?? 'Donation from'}: ${movement['donor_name'] ?? 'N/A'}\n${translate(context, 'time.date') ?? 'Date'}: ${formatDate(movement['created_at'])}';
       case 'contribution_made':
-        return '${translate(context, 'contributionTo') ?? 'Contribución a'}: ${movement['recipient_name'] ?? 'N/A'}\n${translate(context, 'date') ?? 'Fecha'}: ${formatDate(movement['created_at'])}';
+        return '${translate(context, 'movements.contributionTo') ?? 'Contribution to'}: ${movement['recipient_name'] ?? 'N/A'}\n${translate(context, 'time.date') ?? 'Date'}: ${formatDate(movement['created_at'])}';
       default:
-        return translate(context, 'noDescription') ?? 'Sin descripción';
+        return translate(context, 'errors.noDescription') ?? 'No description';
     }
   }
 
   String _getAmountOrPoints(Map<String, dynamic> movement) {
-    return '${translate(context, 'points') ?? 'Puntos'}: ${movement['points'] ?? 0}';
+    return '${translate(context, 'points.points') ?? 'Points'}: ${movement['points'] ?? 0}';
   }
 
   Widget _buildMovementItem(Map<String, dynamic> movement) {
@@ -130,7 +129,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(translate(context, 'institutionMovements') ?? 'Movimientos de la Institución'), // Modificado
+        title: Text(translate(context, 'movements.institutionMovements') ?? 'Institution Movements'),
       ),
       body: Column(
         children: [
@@ -141,7 +140,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
               child: Row(
                 children: [
                   TextButton(
-                    child: Text(translate(context, 'all') ?? 'Todos'), // Modificado
+                    child: Text(translate(context, 'movements.all') ?? 'All'),
                     onPressed: () {
                       setState(() {
                         selectedFilter = 'all';
@@ -149,7 +148,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
                     },
                   ),
                   TextButton(
-                    child: Text(translate(context, 'donationsReceived') ?? 'Donaciones Recibidas'), // Modificado
+                    child: Text(translate(context, 'movements.donationsReceived') ?? 'Donations Received'),
                     onPressed: () {
                       setState(() {
                         selectedFilter = 'donation_received';
@@ -157,7 +156,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
                     },
                   ),
                   TextButton(
-                    child: Text(translate(context, 'contributionsMade') ?? 'Contribuciones Realizadas'), // Modificado
+                    child: Text(translate(context, 'movements.contributionsMade') ?? 'Contributions Made'),
                     onPressed: () {
                       setState(() {
                         selectedFilter = 'contribution_made';
@@ -172,7 +171,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
             child: isLoading
                 ? Center(child: CircularProgressIndicator())
                 : filteredMovements.isEmpty
-                ? Center(child: Text(translate(context, 'noMovements') ?? 'No hay movimientos disponibles')) // Modificado
+                ? Center(child: Text(translate(context, 'movements.noMovements') ?? 'No movements available'))
                 : ListView.builder(
               itemCount: filteredMovements.length,
               itemBuilder: (context, index) {

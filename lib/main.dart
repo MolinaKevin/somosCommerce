@@ -8,12 +8,13 @@ import 'l10n/app_localizations.dart';
 import 'helpers/translations_helper.dart';
 import 'providers/language_provider.dart';
 
+
 void main() {
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthService()),
-        ChangeNotifierProvider(create: (_) => LanguageProvider()..loadLanguage()), // Cargar el idioma al iniciar
+        ChangeNotifierProvider(create: (_) => LanguageProvider()..loadLanguage()),
       ],
       child: MyApp(),
     ),
@@ -25,10 +26,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<LanguageProvider>(
       builder: (context, languageProvider, child) {
+        print('Building MaterialApp with locale: ${languageProvider.currentLanguage}');
         return MaterialApp(
-          key: ValueKey(languageProvider.currentLanguage),  // Clave única para forzar el rebuild
-          title: translate(context, 'appTitle') ?? 'Flutter Demo',
-          locale: Locale(languageProvider.currentLanguage), // Usar el idioma actual
+          key: ValueKey(languageProvider.currentLanguage),
+          locale: Locale(languageProvider.currentLanguage),
           localizationsDelegates: const [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
@@ -36,29 +37,26 @@ class MyApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: const [
-            Locale('en', ''), // Inglés
-            Locale('es', ''), // Español
+            Locale('en', ''),
+            Locale('es', ''),
+            Locale('de', ''),
           ],
-          localeResolutionCallback: (locale, supportedLocales) {
-            for (var supportedLocale in supportedLocales) {
-              if (supportedLocale.languageCode == locale?.languageCode) {
-                return supportedLocale;
-              }
-            }
-            return supportedLocales.first;
-          },
-          home: FutureBuilder(
-            future: Provider.of<AuthService>(context, listen: false).tryAutoLogin(),
-            builder: (ctx, authResultSnapshot) {
-              if (authResultSnapshot.connectionState == ConnectionState.waiting) {
-                return Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
-                );
-              } else {
-                return Provider.of<AuthService>(context, listen: false).isAuth
-                    ? BusinessInstitutionScreen()
-                    : LoginScreen();
-              }
+          home: Builder(
+            builder: (context) {
+              return FutureBuilder(
+                future: Provider.of<AuthService>(context, listen: false).tryAutoLogin(),
+                builder: (ctx, authResultSnapshot) {
+                  if (authResultSnapshot.connectionState == ConnectionState.waiting) {
+                    return Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  } else {
+                    return Provider.of<AuthService>(context, listen: false).isAuth
+                        ? BusinessInstitutionScreen()
+                        : LoginScreen();
+                  }
+                },
+              );
             },
           ),
         );

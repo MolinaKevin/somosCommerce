@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../services/upload_image_service.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
-import '../../helpers/translations_helper.dart'; // Importa el helper de traducción
+import '../../helpers/translations_helper.dart';
 
 class BackgroundImageCarousel extends StatefulWidget {
   final List<String> backgroundImages;
@@ -78,7 +78,7 @@ class _BackgroundImageCarouselState extends State<BackgroundImageCarousel> {
       final token = await authService.getToken();
 
       if (token == null) {
-        print('Error de autenticación: No se obtuvo el token.');
+        print('Authentication error: Token not retrieved.');
         return;
       }
 
@@ -90,16 +90,16 @@ class _BackgroundImageCarouselState extends State<BackgroundImageCarousel> {
       );
 
       if (imageUrl != null) {
-        print('Imagen subida: $imageUrl');
+        print('Image uploaded: $imageUrl');
         setState(() {
           widget.onImageUploaded(imageUrl);
         });
       } else {
-        print('Error al cargar la imagen.');
+        print('Error uploading image.');
       }
 
     } catch (e) {
-      print('Error en la subida de la imagen: $e');
+      print('Error uploading image: $e');
     }
   }
 
@@ -109,10 +109,10 @@ class _BackgroundImageCarouselState extends State<BackgroundImageCarousel> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(translate(context, 'enterBackgroundImageUrl') ?? 'Ingresar URL de la Imagen de Fondo'),
+          title: Text(translate(context, 'enterBackgroundImageUrl') ?? 'Enter Background Image URL'),
           content: TextField(
             controller: urlController,
-            decoration: InputDecoration(hintText: 'https://example.com/fondo.png'),
+            decoration: InputDecoration(hintText: 'https://example.com/background.png'),
           ),
           actions: [
             TextButton(
@@ -127,17 +127,20 @@ class _BackgroundImageCarouselState extends State<BackgroundImageCarousel> {
                   );
 
                   if (imageUrl != null) {
-                    print('URL ingresada: $imageUrl');
+                    print('Entered URL: $imageUrl');
                     setState(() {
                       widget.onImageUploaded(imageUrl);
                     });
                     Navigator.of(context).pop();
                   } else {
-                    _showDialog(translate(context, 'error') ?? 'Error', translate(context, 'imageUploadError') ?? 'Error al cargar la imagen desde URL');
+                    _showDialog(
+                      translate(context, 'error') ?? 'Error',
+                      translate(context, 'imageUploadError') ?? 'Error uploading image from URL',
+                    );
                   }
                 }
               },
-              child: Text(translate(context, 'save') ?? 'Guardar'),
+              child: Text(translate(context, 'save') ?? 'Save'),
             ),
           ],
         );
@@ -152,13 +155,13 @@ class _BackgroundImageCarouselState extends State<BackgroundImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    print('Imágenes actuales: ${widget.backgroundImages}');
-    print('Índice seleccionado: ${widget.currentIndex}');
+    print('Current images: ${widget.backgroundImages}');
+    print('Selected index: ${widget.currentIndex}');
 
     return Column(
       children: [
         if (widget.backgroundImages.isEmpty)
-          Text(translate(context, 'noImagesAvailable') ?? 'No hay imágenes disponibles')
+          Text(translate(context, 'noImagesAvailable') ?? 'No images available')
         else
           SizedBox(
             height: 150,
@@ -169,15 +172,15 @@ class _BackgroundImageCarouselState extends State<BackgroundImageCarousel> {
                 String imageUrl = widget.backgroundImages[index];
                 bool isSelectedImage = index == widget.currentIndex;
 
-                print('Mostrando imagen: $imageUrl en índice: $index');
+                print('Displaying image: $imageUrl at index: $index');
 
                 return GestureDetector(
                   onTap: () {
-                    print('Imagen seleccionada: $imageUrl en índice: $index');
+                    print('Image selected: $imageUrl at index: $index');
                     widget.onSelectImage(index);
 
                     if (index == widget.currentIndex) {
-                      widget.onImageUploaded(null); // Borrar el background_image_id si es la actual
+                      widget.onImageUploaded(null); // Clear background_image_id if it’s current
                     }
                   },
                   child: Container(
@@ -205,7 +208,7 @@ class _BackgroundImageCarouselState extends State<BackgroundImageCarousel> {
             ),
           ),
         CupertinoButton.filled(
-          child: Text(translate(context, 'addBackgroundImage') ?? 'Agregar Imagen de Fondo'),
+          child: Text(translate(context, 'backgroundImage.addBackgroundImage') ?? 'Add Background Image'),
           onPressed: () {
             showModalBottomSheet(
               context: context,
@@ -216,7 +219,7 @@ class _BackgroundImageCarouselState extends State<BackgroundImageCarousel> {
                     children: [
                       ListTile(
                         leading: Icon(Icons.photo_library),
-                        title: Text(translate(context, 'uploadFromGallery') ?? 'Subir desde la galería'),
+                        title: Text(translate(context, 'avatar.uploadFromGallery') ?? 'Upload from Gallery'),
                         onTap: () {
                           _pickImageFromGallery();
                           Navigator.of(context).pop();
@@ -224,7 +227,7 @@ class _BackgroundImageCarouselState extends State<BackgroundImageCarousel> {
                       ),
                       ListTile(
                         leading: Icon(Icons.link),
-                        title: Text(translate(context, 'enterUrl') ?? 'Ingresar URL'),
+                        title: Text(translate(context, 'avatar.enterUrl') ?? 'Enter URL'),
                         onTap: () {
                           _enterImageUrl();
                           Navigator.of(context).pop();
@@ -232,7 +235,7 @@ class _BackgroundImageCarouselState extends State<BackgroundImageCarousel> {
                       ),
                       ListTile(
                         leading: Icon(Icons.camera_alt),
-                        title: Text(translate(context, 'takePhoto') ?? 'Tomar una foto'),
+                        title: Text(translate(context, 'avatar.takePhoto') ?? 'Take a Photo'),
                         onTap: () {
                           _takePhoto();
                           Navigator.of(context).pop();

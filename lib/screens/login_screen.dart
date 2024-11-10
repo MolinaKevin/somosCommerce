@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import 'business_institution_screen.dart';
-import '../helpers/translations_helper.dart'; // Importa el helper de traducción
+import '../helpers/translations_helper.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -19,7 +19,7 @@ class _LoginPageState extends State<LoginScreen> {
 
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text(translate(context, 'login') ?? 'Iniciar Sesión'),
+        middle: Text(translate(context, 'auth.login') ?? 'Login'),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -28,20 +28,20 @@ class _LoginPageState extends State<LoginScreen> {
           children: [
             CupertinoTextField(
               controller: _emailController,
-              placeholder: translate(context, 'email') ?? 'Email',
+              placeholder: translate(context, 'auth.email') ?? 'Email',
               keyboardType: TextInputType.emailAddress,
             ),
             SizedBox(height: 16),
             CupertinoTextField(
               controller: _passwordController,
-              placeholder: translate(context, 'password') ?? 'Contraseña',
+              placeholder: translate(context, 'auth.password') ?? 'Password',
               obscureText: true,
             ),
             SizedBox(height: 16),
             CupertinoButton.filled(
               child: authService.authStatus == AuthStatus.Authenticating
                   ? CupertinoActivityIndicator()
-                  : Text(translate(context, 'login') ?? 'Iniciar Sesión'),
+                  : Text(translate(context, 'auth.login') ?? 'Login'),
               onPressed: authService.authStatus == AuthStatus.Authenticating
                   ? null
                   : () async {
@@ -61,11 +61,11 @@ class _LoginPageState extends State<LoginScreen> {
                     showCupertinoDialog(
                       context: context,
                       builder: (context) => CupertinoAlertDialog(
-                        title: Text(translate(context, 'error') ?? 'Error'),
-                        content: Text(translate(context, 'loginFailed') ?? 'No se pudo iniciar sesión.'),
+                        title: Text(translate(context, 'errors.error') ?? 'Error'),
+                        content: Text(translate(context, 'auth.loginFailed') ?? 'Failed to login.'),
                         actions: [
                           CupertinoDialogAction(
-                            child: Text(translate(context, 'accept') ?? 'Aceptar'),
+                            child: Text(translate(context, 'forms.accept') ?? 'Accept'),
                             onPressed: () => Navigator.of(context).pop(),
                           ),
                         ],

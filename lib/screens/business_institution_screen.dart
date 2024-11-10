@@ -20,7 +20,7 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
     with AutomaticKeepAliveClientMixin {
   int _selectedSegment = 0;
   List<bool> _isTileExpanded = [];
-  String? _tempSelectedLanguage; // Variable para almacenar el idioma temporalmente
+  String? _tempSelectedLanguage;
 
   @override
   bool get wantKeepAlive => true;
@@ -41,12 +41,11 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
     _initializeTileExpansionState();
   }
 
-  // Función para confirmar el cambio de idioma
   void _confirmLanguageChange() {
     if (_tempSelectedLanguage != null) {
+      print('Confirming language change to: $_tempSelectedLanguage');
       Provider.of<LanguageProvider>(context, listen: false)
-          .updateLanguage(_tempSelectedLanguage!); // Cambiar idioma
-      setState(() {});
+          .updateLanguage(_tempSelectedLanguage!);
     }
   }
 
@@ -54,7 +53,8 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
   Widget build(BuildContext context) {
     super.build(context);
     final authService = Provider.of<AuthService>(context);
-    final languageProvider = Provider.of<LanguageProvider>(context); // Accedemos al idioma actual
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    print('Rebuilding BusinessInstitutionScreen with language: ${languageProvider.currentLanguage}');
 
     List<Map<String, dynamic>> _currentList = _selectedSegment == 0
         ? authService.commerces
@@ -66,7 +66,7 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(translate(context, 'myEntities') ?? 'Mis Entidades'),
+        title: Text(translate(context, 'entity.myEntities') ?? 'My Entities'),
       ),
       drawer: Drawer(
         child: ListView(
@@ -77,7 +77,7 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                 color: Colors.blue,
               ),
               child: Text(
-                translate(context, 'menu') ?? 'Menú',
+                translate(context, 'entity.menu') ?? 'Menu',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 24,
@@ -86,14 +86,14 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
             ),
             ListTile(
               leading: Icon(Icons.business),
-              title: Text(translate(context, 'businessAndInstitutions') ?? 'Comercios e Instituciones'),
+              title: Text(translate(context, 'entity.businessAndInstitutions') ?? 'Businesses and Institutions'),
               onTap: () {
-                Navigator.pop(context); // Cierra el drawer
+                Navigator.pop(context);
               },
             ),
             ListTile(
               leading: Icon(Icons.logout),
-              title: Text(translate(context, 'logout') ?? 'Logout'),
+              title: Text(translate(context, 'auth.logout') ?? 'Logout'),
               onTap: () async {
                 await authService.logout();
                 Navigator.of(context).pushReplacement(
@@ -109,15 +109,15 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(translate(context, 'selectLanguage') ?? 'Seleccionar idioma'),
+                  Text(translate(context, 'language.selectLanguage') ?? 'Select Language'),
                   Row(
                     children: [
                       Expanded(
                         child: DropdownButton<String>(
-                          value: _tempSelectedLanguage ?? languageProvider.currentLanguage, // Usamos el idioma temporal o el actual
+                          value: _tempSelectedLanguage ?? languageProvider.currentLanguage,
                           onChanged: (newLanguage) {
                             setState(() {
-                              _tempSelectedLanguage = newLanguage; // Guardamos el idioma temporalmente
+                              _tempSelectedLanguage = newLanguage;
                             });
                           },
                           items: const [
@@ -129,13 +129,17 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                               value: 'en',
                               child: Text('English'),
                             ),
+                            DropdownMenuItem(
+                              value: 'de',
+                              child: Text('Deutsch'),
+                            ),
                           ],
                         ),
                       ),
                       SizedBox(width: 10),
                       ElevatedButton(
-                        onPressed: _confirmLanguageChange, // Confirmar el cambio de idioma
-                        child: Text(translate(context, 'confirm') ?? 'Confirmar'),
+                        onPressed: _confirmLanguageChange,
+                        child: Text(translate(context, 'forms.confirm') ?? 'Confirm'),
                       ),
                     ],
                   ),
@@ -151,8 +155,8 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
             padding: const EdgeInsets.all(16.0),
             child: CupertinoSegmentedControl<int>(
               children: {
-                0: Text(translate(context, 'businesses') ?? 'Comercios'),
-                1: Text(translate(context, 'institutions') ?? 'Instituciones'),
+                0: Text(translate(context, 'entity.businesses') ?? 'Businesses'),
+                1: Text(translate(context, 'entity.institutions') ?? 'Institutions'),
               },
               onValueChanged: (int value) {
                 setState(() {
@@ -189,8 +193,8 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('${translate(context, 'address') ?? 'Dirección'}: ${item['address'] ?? ''}'),
-                        Text('${translate(context, 'phone') ?? 'Teléfono'}: ${item['phone'] ?? ''}'),
+                        Text('${translate(context, 'entity_fields.address') ?? 'Address'}: ${item['address'] ?? ''}'),
+                        Text('${translate(context, 'entity_fields.phone') ?? 'Phone'}: ${item['phone'] ?? ''}'),
                       ],
                     ),
                     children: [
@@ -201,7 +205,7 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                           children: [
                             ElevatedButton.icon(
                               icon: Icon(Icons.edit, color: Colors.blue),
-                              label: Text(translate(context, 'edit') ?? 'Editar'),
+                              label: Text(translate(context, 'forms.edit') ?? 'Edit'),
                               onPressed: () {
                                 if (_selectedSegment == 0) {
                                   Navigator.of(context).push(
@@ -223,7 +227,7 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                                 isActive ? Icons.cancel : Icons.check_circle,
                                 color: Colors.orange,
                               ),
-                              label: Text(isActive ? translate(context, 'deactivate') ?? 'Desactivar' : translate(context, 'activate') ?? 'Activar'),
+                              label: Text(isActive ? translate(context, 'forms.deactivate') ?? 'Deactivate' : translate(context, 'forms.activate') ?? 'Activate'),
                               onPressed: () async {
                                 final token = await authService.getToken();
                                 final commerceService = CommerceService();
@@ -234,8 +238,8 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                                     context: context,
                                     builder: (context) {
                                       return CupertinoAlertDialog(
-                                        title: Text(translate(context, 'notAccepted') ?? 'No aceptado'),
-                                        content: Text('${translate(context, 'theBusiness')} ${item['name']} ${translate(context, 'isNotAccepted')}'),
+                                        title: Text(translate(context, 'entity.notAccepted') ?? 'Not accepted'),
+                                        content: Text('${translate(context, 'entity.theBusiness') ?? 'The business'} ${item['name']} ${translate(context, 'entity.isNotAccepted') ?? 'is not yet accepted, please wait.'}'),
                                         actions: <CupertinoDialogAction>[
                                           CupertinoDialogAction(
                                             child: Text('OK'),
@@ -265,7 +269,7 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                                       builder: (context) {
                                         return CupertinoAlertDialog(
                                           title: Text('Error'),
-                                          content: Text('${translate(context, 'problem')} ${isActive ? translate(context, 'deactivating') : translate(context, 'activating')} ${translate(context, 'theBusiness')}'),
+                                          content: Text('${translate(context, 'errors.problem') ?? 'There was a problem'} ${isActive ? translate(context, 'forms.deactivating') : translate(context, 'forms.activating')} ${translate(context, 'entity.theBusiness')}'),
                                           actions: <CupertinoDialogAction>[
                                             CupertinoDialogAction(
                                               child: Text('OK'),
@@ -283,9 +287,9 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                             ),
                             ElevatedButton.icon(
                               icon: Icon(Icons.delete, color: Colors.red),
-                              label: Text(translate(context, 'delete') ?? 'Eliminar'),
+                              label: Text(translate(context, 'forms.delete') ?? 'Delete'),
                               onPressed: () {
-                                print('${translate(context, 'deleting')} ${item['name']}');
+                                print('${translate(context, 'forms.deleting')} ${item['name']}');
                               },
                             ),
                           ],
@@ -317,8 +321,8 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
               },
               child: Text(
                 _selectedSegment == 0
-                    ? translate(context, 'createNewBusiness') ?? 'Crear nuevo comercio'
-                    : translate(context, 'createNewInstitution') ?? 'Crear nueva institución',
+                    ? translate(context, 'business.createNewBusiness') ?? 'Create new business'
+                    : translate(context, 'institution.createNewInstitution') ?? 'Create new institution',
               ),
             ),
           ),

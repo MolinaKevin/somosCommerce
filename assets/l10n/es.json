@@ -1,4 +1,7 @@
 {
+  "language": {
+    "selectLanguage": "Elegir idioma"
+  },
   "auth": {
     "login": "Iniciar sesión",
     "logout": "Logout",
@@ -80,7 +83,8 @@
     "deactivating": "desactivar",
     "activating": "activar",
     "deleting": "Eliminando",
-    "accept": "Aceptar"
+    "accept": "Aceptar",
+    "confirm": "Confirmar"
   },
   "entity": {
     "myEntities": "Mis Entidades",

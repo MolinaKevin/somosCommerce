@@ -13,22 +13,38 @@ class AppLocalizations {
 
   static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
-  Map<String, String> _localizedStrings = {};
+  Map<String, dynamic> _localizedStrings = {};
 
   Future<void> load() async {
-    // Cargar archivo JSON según el idioma
+    print('Cargando localizaciones para ${locale.languageCode}');
     String jsonString = await rootBundle.loadString('assets/l10n/${locale.languageCode}.json');
     Map<String, dynamic> jsonMap = json.decode(jsonString);
 
-    // Mapear el contenido JSON a un Map de strings
-    _localizedStrings = jsonMap.map((key, value) {
-      return MapEntry(key, value.toString());
-    });
+    _localizedStrings = jsonMap;
   }
 
-  // Método para traducir una clave a su valor correspondiente
+  dynamic _getNestedValue(Map<String, dynamic> map, List<String> keys) {
+    dynamic value = map;
+    for (String key in keys) {
+      if (value is Map<String, dynamic> && value.containsKey(key)) {
+        value = value[key];
+      } else {
+        return null;
+      }
+    }
+    return value;
+  }
+
   String? translate(String key) {
-    return _localizedStrings[key];
+    List<String> keys = key.split('.');
+    dynamic value = _getNestedValue(_localizedStrings, keys);
+    if (value is String) {
+      print('Translating key: $key, value: $value');
+      return value;
+    } else {
+      print('Translation not found for key: $key');
+      return null;
+    }
   }
 }
 
@@ -37,18 +53,16 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
 
   @override
   bool isSupported(Locale locale) {
-    // Idiomas soportados
-    return ['en', 'es'].contains(locale.languageCode);
+    return ['en', 'es', 'de'].contains(locale.languageCode);
   }
 
   @override
   Future<AppLocalizations> load(Locale locale) async {
-    // Cargar traducciones para la locale dada
     AppLocalizations localizations = AppLocalizations(locale);
     await localizations.load();
     return localizations;
   }
 
   @override
-  bool shouldReload(_AppLocalizationsDelegate old) => false;
+  bool shouldReload(_AppLocalizationsDelegate old) => true;
 }
