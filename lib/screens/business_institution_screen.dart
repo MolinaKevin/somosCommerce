@@ -32,7 +32,8 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
   }
 
   void _initializeTileExpansionState() {
-    _isTileExpanded = List.filled(Provider.of<AuthService>(context, listen: false).commerces.length, false);
+    _isTileExpanded =
+        List.filled(Provider.of<AuthService>(context, listen: false).commerces.length, false);
   }
 
   @override
@@ -54,11 +55,11 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
     super.build(context);
     final authService = Provider.of<AuthService>(context);
     final languageProvider = Provider.of<LanguageProvider>(context);
-    print('Rebuilding BusinessInstitutionScreen with language: ${languageProvider.currentLanguage}');
+    print(
+        'Rebuilding BusinessInstitutionScreen with language: ${languageProvider.currentLanguage}');
 
-    List<Map<String, dynamic>> _currentList = _selectedSegment == 0
-        ? authService.commerces
-        : authService.institutions;
+    List<Map<String, dynamic>> _currentList =
+    _selectedSegment == 0 ? authService.commerces : authService.institutions;
 
     if (_isTileExpanded.length != _currentList.length) {
       _initializeTileExpansionState();
@@ -86,7 +87,8 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
             ),
             ListTile(
               leading: Icon(Icons.business),
-              title: Text(translate(context, 'entity.businessAndInstitutions') ?? 'Businesses and Institutions'),
+              title: Text(translate(context, 'entity.businessAndInstitutions') ??
+                  'Businesses and Institutions'),
               onTap: () {
                 Navigator.pop(context);
               },
@@ -120,20 +122,14 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                               _tempSelectedLanguage = newLanguage;
                             });
                           },
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'es',
-                              child: Text('Español'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'en',
-                              child: Text('English'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'de',
-                              child: Text('Deutsch'),
-                            ),
-                          ],
+                          items: ['es', 'en', 'de'].map((code) {
+                            return DropdownMenuItem(
+                              value: code,
+                              child: Text(
+                                translate(context, 'languages.$code') ?? code.toUpperCase(),
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ),
                       SizedBox(width: 10),
@@ -193,13 +189,16 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('${translate(context, 'entity_fields.address') ?? 'Address'}: ${item['address'] ?? ''}'),
-                        Text('${translate(context, 'entity_fields.phone') ?? 'Phone'}: ${item['phone'] ?? ''}'),
+                        Text(
+                            '${translate(context, 'entity_fields.address') ?? 'Address'}: ${item['address'] ?? ''}'),
+                        Text(
+                            '${translate(context, 'entity_fields.phone') ?? 'Phone'}: ${item['phone'] ?? ''}'),
                       ],
                     ),
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        padding:
+                        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -216,7 +215,8 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                                 } else {
                                   Navigator.of(context).push(
                                     CupertinoPageRoute(
-                                      builder: (context) => EditInstitutionPage(entity: item),
+                                      builder: (context) =>
+                                          EditInstitutionPage(entity: item),
                                     ),
                                   );
                                 }
@@ -227,7 +227,13 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                                 isActive ? Icons.cancel : Icons.check_circle,
                                 color: Colors.orange,
                               ),
-                              label: Text(isActive ? translate(context, 'forms.deactivate') ?? 'Deactivate' : translate(context, 'forms.activate') ?? 'Activate'),
+                              label: Text(
+                                isActive
+                                    ? translate(context, 'forms.deactivate') ??
+                                    'Deactivate'
+                                    : translate(context, 'forms.activate') ??
+                                    'Activate',
+                              ),
                               onPressed: () async {
                                 final token = await authService.getToken();
                                 final commerceService = CommerceService();
@@ -238,8 +244,10 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                                     context: context,
                                     builder: (context) {
                                       return CupertinoAlertDialog(
-                                        title: Text(translate(context, 'entity.notAccepted') ?? 'Not accepted'),
-                                        content: Text('${translate(context, 'entity.theBusiness') ?? 'The business'} ${item['name']} ${translate(context, 'entity.isNotAccepted') ?? 'is not yet accepted, please wait.'}'),
+                                        title: Text(translate(context, 'entity.notAccepted') ??
+                                            'Not accepted'),
+                                        content: Text(
+                                            '${translate(context, 'entity.theBusiness') ?? 'The business'} ${item['name']} ${translate(context, 'entity.isNotAccepted') ?? 'is not yet accepted, please wait.'}'),
                                         actions: <CupertinoDialogAction>[
                                           CupertinoDialogAction(
                                             child: Text('OK'),
@@ -254,9 +262,11 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                                 } else {
                                   bool success = false;
                                   if (isActive) {
-                                    success = await commerceService.deactivateCommerce(token!, commerceId);
+                                    success = await commerceService.deactivateCommerce(
+                                        token!, commerceId);
                                   } else {
-                                    success = await commerceService.activateCommerce(token!, commerceId);
+                                    success = await commerceService.activateCommerce(
+                                        token!, commerceId);
                                   }
 
                                   if (success) {
@@ -269,7 +279,8 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                                       builder: (context) {
                                         return CupertinoAlertDialog(
                                           title: Text('Error'),
-                                          content: Text('${translate(context, 'errors.problem') ?? 'There was a problem'} ${isActive ? translate(context, 'forms.deactivating') : translate(context, 'forms.activating')} ${translate(context, 'entity.theBusiness')}'),
+                                          content: Text(
+                                              '${translate(context, 'errors.problem') ?? 'There was a problem'} ${isActive ? translate(context, 'forms.deactivating') : translate(context, 'forms.activating')} ${translate(context, 'entity.theBusiness')}'),
                                           actions: <CupertinoDialogAction>[
                                             CupertinoDialogAction(
                                               child: Text('OK'),
@@ -289,7 +300,8 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                               icon: Icon(Icons.delete, color: Colors.red),
                               label: Text(translate(context, 'forms.delete') ?? 'Delete'),
                               onPressed: () {
-                                print('${translate(context, 'forms.deleting')} ${item['name']}');
+                                print(
+                                    '${translate(context, 'forms.deleting')} ${item['name']}');
                               },
                             ),
                           ],
@@ -321,8 +333,10 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
               },
               child: Text(
                 _selectedSegment == 0
-                    ? translate(context, 'business.createNewBusiness') ?? 'Create new business'
-                    : translate(context, 'institution.createNewInstitution') ?? 'Create new institution',
+                    ? translate(context, 'business.createNewBusiness') ??
+                    'Create new business'
+                    : translate(context, 'institution.createNewInstitution') ??
+                    'Create new institution',
               ),
             ),
           ),

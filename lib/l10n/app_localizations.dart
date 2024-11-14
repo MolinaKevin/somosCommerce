@@ -1,9 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../services/translation_service.dart'; // Asegúrate de que la ruta sea correcta
 
 class AppLocalizations {
   final Locale locale;
+  Map<String, dynamic> _localizedStrings = {};
 
   AppLocalizations(this.locale);
 
@@ -11,16 +11,18 @@ class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
-
-  Map<String, dynamic> _localizedStrings = {};
+  static LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   Future<void> load() async {
     print('Cargando localizaciones para ${locale.languageCode}');
-    String jsonString = await rootBundle.loadString('assets/l10n/${locale.languageCode}.json');
-    Map<String, dynamic> jsonMap = json.decode(jsonString);
-
-    _localizedStrings = jsonMap;
+    TranslationService translationService = TranslationService();
+    try {
+      _localizedStrings = await translationService.fetchTranslations(locale.languageCode);
+      print('Traducciones cargadas: $_localizedStrings');
+    } catch (e) {
+      print('Error al cargar las traducciones: $e');
+      _localizedStrings = {}; // Carga un mapa vacío en caso de error
+    }
   }
 
   dynamic _getNestedValue(Map<String, dynamic> map, List<String> keys) {
@@ -49,8 +51,6 @@ class AppLocalizations {
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
-  const _AppLocalizationsDelegate();
-
   @override
   bool isSupported(Locale locale) {
     return ['en', 'es', 'de'].contains(locale.languageCode);
@@ -64,5 +64,5 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool shouldReload(_AppLocalizationsDelegate old) => true;
+  bool shouldReload(covariant LocalizationsDelegate<AppLocalizations> old) => false;
 }
