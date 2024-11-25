@@ -7,7 +7,6 @@ String? translate(BuildContext context, String key) {
     print('AppLocalizations.of(context) es null');
     return null;
   } else {
-    print('AppLocalizations.of(context) cargado correctamente');
     return localizations.translate(key);
   }
 }

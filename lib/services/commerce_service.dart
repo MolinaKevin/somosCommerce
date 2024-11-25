@@ -10,14 +10,19 @@ class CommerceService {
       'Authorization': 'Bearer $token',
     });
 
+    // Agregar impresiones de depuración
+    print('Código de estado: ${response.statusCode}');
+    print('Respuesta del servidor: ${response.body}');
+
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       return data;
     } else {
-      print('Error al obtener comercios: ${response.statusCode}');
+      print('Error al obtener comercios: ${response.statusCode} - ${response.body}');
       return {};
     }
   }
+
 
   Future<Map<String, dynamic>?> createCommerce(String token, Map<String, dynamic> commerceData) async {
     final url = Uri.parse('$baseUrl/commerces');

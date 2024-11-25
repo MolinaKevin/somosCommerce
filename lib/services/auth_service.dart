@@ -84,11 +84,16 @@ class AuthService with ChangeNotifier {
 
       // Obtener los comercios del usuario
       final commerceResponse = await commerceService.fetchCommerces(token);
-      if (commerceResponse != null && commerceResponse['data'] != null && commerceResponse['data'] is List) {
-        _commerces = List<Map<String, dynamic>>.from(commerceResponse['data'] as List);
+      if (commerceResponse != null) {
+        if (commerceResponse['data'] != null && commerceResponse['data'] is List) {
+          _commerces = List<Map<String, dynamic>>.from(commerceResponse['data'] as List);
+        } else {
+          print('La respuesta no contiene una lista de comercios en "data". Respuesta completa: $commerceResponse');
+        }
       } else {
-        print('Estructura inesperada en la respuesta (comm): $commerceResponse');
+        print('La respuesta del servidor es nula.');
       }
+
 
       // Obtener las instituciones del usuario
       final institutionResponse = await institutionService.fetchInstitutions(token);

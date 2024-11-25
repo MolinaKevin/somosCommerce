@@ -5,12 +5,21 @@ import 'package:provider/provider.dart';
 import 'package:latlong2/latlong.dart';
 import '../services/auth_service.dart';
 import '../services/commerce_service.dart';
+import '../services/category_service.dart';
 import '../screens/map_screen.dart';
 import 'sub_tabs/avatar_section.dart';
 import 'sub_tabs/background_image_carousel.dart';
 import 'sub_tabs/time_picker_section.dart';
+import 'sub_tabs/category_selection.dart'; // Importamos el CategorySelectionWidget
 import 'package:flutter/services.dart';
 import '../helpers/translations_helper.dart';
+
+class CategoryNode {
+  Map<String, dynamic> category;
+  List<CategoryNode> children;
+
+  CategoryNode({required this.category, this.children = const []});
+}
 
 class Tab3 extends StatefulWidget {
   final Map<String, dynamic> entity;
@@ -40,6 +49,13 @@ class _Tab3State extends State<Tab3> {
   TimeOfDay? _closingTime;
   final ImagePicker _picker = ImagePicker();
 
+  List<Map<String, dynamic>> _allCategories = [];
+  List<int> _selectedCategoryIds = [];
+
+  List<CategoryNode> _categoryTree = [];
+
+  List<int>? _updatedSelectedCategoryIds; // Variable para almacenar los IDs actualizados
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +79,56 @@ class _Tab3State extends State<Tab3> {
 
     _openingTime = _parseTime(widget.entity['opening_time']);
     _closingTime = _parseTime(widget.entity['closing_time']);
+
+    if (widget.entity['category_ids'] != null) {
+      _selectedCategoryIds = List<int>.from(widget.entity['category_ids']);
+    } else if (widget.entity['categories'] != null) {
+      _selectedCategoryIds = List<int>.from(
+        widget.entity['categories'].map((category) => category['id']),
+      );
+    } else {
+      _selectedCategoryIds = [];
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_allCategories.isEmpty) {
+      _fetchCategories();
+    }
+  }
+
+  Future<void> _fetchCategories() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final token = await authService.getToken();
+    if (token != null) {
+      final categoryService = CategoryService();
+      final categories = await categoryService.fetchCategories(token);
+      setState(() {
+        _allCategories = categories;
+        _buildCategoryTree();
+      });
+    }
+  }
+
+  void _buildCategoryTree() {
+    Map<int, CategoryNode> nodesById = {};
+
+    for (var category in _allCategories) {
+      nodesById[category['id']] = CategoryNode(category: category, children: []);
+    }
+
+    _categoryTree = [];
+    for (var category in _allCategories) {
+      var node = nodesById[category['id']]!;
+      var parentId = category['parent_id'];
+      if (parentId != null && nodesById.containsKey(parentId)) {
+        nodesById[parentId]!.children.add(node);
+      } else {
+        _categoryTree.add(node);
+      }
+    }
   }
 
   TimeOfDay _parseTime(String? time) {
@@ -98,42 +164,6 @@ class _Tab3State extends State<Tab3> {
               onPressed: () {
                 setState(() {
                   _avatarController.text = urlController.text;
-                });
-                Navigator.of(context).pop();
-              },
-              child: Text(translate(context, 'forms.save') ?? 'Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _pickBackgroundImage({required ImageSource source}) async {
-    final XFile? pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      setState(() {
-        _backgroundImages.add(pickedFile.path);
-      });
-    }
-  }
-
-  Future<void> _enterBackgroundImageUrl() async {
-    TextEditingController urlController = TextEditingController();
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(translate(context, 'backgroundImage.enterBackgroundImageUrl') ?? 'Enter Background Image URL'),
-          content: TextField(
-            controller: urlController,
-            decoration: InputDecoration(hintText: 'https://example.com/background.png'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _backgroundImages.add(urlController.text);
                 });
                 Navigator.of(context).pop();
               },
@@ -181,6 +211,7 @@ class _Tab3State extends State<Tab3> {
         'percent': double.tryParse(_percentController.text) ?? 0.0,
         'opening_time': _openingTime?.format(context),
         'closing_time': _closingTime?.format(context),
+        'categories': _selectedCategoryIds,
       };
 
       final authService = Provider.of<AuthService>(context, listen: false);
@@ -211,6 +242,47 @@ class _Tab3State extends State<Tab3> {
     }
   }
 
+  void _showCategorySelectionDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        final categorySelectionWidget = CategorySelectionWidget(
+          categories: _categoryTreeToList(_categoryTree),
+          selectedCategoryIds: _selectedCategoryIds,
+          onSelectionChanged: (selectedIds) {
+            _updatedSelectedCategoryIds = selectedIds;
+          },
+        );
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          child: categorySelectionWidget,
+        );
+      },
+    ).then((_) {
+      setState(() {
+        if (_updatedSelectedCategoryIds != null) {
+          _selectedCategoryIds = _updatedSelectedCategoryIds!;
+        }
+      });
+    });
+  }
+
+  List<Map<String, dynamic>> _categoryTreeToList(List<CategoryNode> nodes) {
+    return nodes.map((node) => _categoryNodeToMap(node)).toList();
+  }
+
+  Map<String, dynamic> _categoryNodeToMap(CategoryNode node) {
+    return {
+      'id': node.category['id'],
+      'name': node.category['translated_name'] ?? node.category['name'],
+      'children': node.children.map((child) => _categoryNodeToMap(child)).toList(),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -229,25 +301,38 @@ class _Tab3State extends State<Tab3> {
                 onEnterAvatarUrl: _enterAvatarUrl,
               ),
               SizedBox(height: 16),
-
               _buildTextFieldWithLabel(label: translate(context, 'entity_fields.name') ?? 'Name:', controller: _nameController),
               SizedBox(height: 16),
               _buildTextFieldWithLabel(label: translate(context, 'entity_fields.address') ?? 'Address:', controller: _addressController),
               SizedBox(height: 16),
               _buildTextFieldWithLabel(label: translate(context, 'entity_fields.city') ?? 'City:', controller: _cityController),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: translate(context, 'entity_fields.plz') ?? 'PLZ:', controller: _plzController, keyboardType: TextInputType.number, inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
+              _buildTextFieldWithLabel(
+                label: translate(context, 'entity_fields.plz') ?? 'PLZ:',
+                controller: _plzController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
               SizedBox(height: 16),
-
               Row(
                 children: [
                   Expanded(
                     flex: 7,
-                    child: _buildTextFieldWithLabel(label: translate(context, 'entity_fields.latitude') ?? 'Latitude:', controller: _latitudeController, keyboardType: TextInputType.numberWithOptions(decimal: true), inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
+                    child: _buildTextFieldWithLabel(
+                      label: translate(context, 'entity_fields.latitude') ?? 'Latitude:',
+                      controller: _latitudeController,
+                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.-]'))],
+                    ),
                   ),
                   Expanded(
                     flex: 7,
-                    child: _buildTextFieldWithLabel(label: translate(context, 'entity_fields.longitude') ?? 'Longitude:', controller: _longitudeController, keyboardType: TextInputType.numberWithOptions(decimal: true), inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]),
+                    child: _buildTextFieldWithLabel(
+                      label: translate(context, 'entity_fields.longitude') ?? 'Longitude:',
+                      controller: _longitudeController,
+                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.-]'))],
+                    ),
                   ),
                   IconButton(
                     icon: Icon(Icons.map),
@@ -256,7 +341,6 @@ class _Tab3State extends State<Tab3> {
                 ],
               ),
               SizedBox(height: 16),
-
               BackgroundImageCarousel(
                 backgroundImages: _backgroundImages,
                 currentIndex: _currentBackgroundIndex,
@@ -277,12 +361,13 @@ class _Tab3State extends State<Tab3> {
                   });
                 },
               ),
-
               SizedBox(height: 16),
-
-              _buildTextFieldWithLabel(label: translate(context, 'entity_fields.percent') ?? 'Percent:', controller: _percentController, readOnly: true),
+              _buildTextFieldWithLabel(
+                label: translate(context, 'entity_fields.percent') ?? 'Percent:',
+                controller: _percentController,
+                readOnly: true,
+              ),
               SizedBox(height: 16),
-
               TimePickerSection(
                 openingTime: _openingTime,
                 closingTime: _closingTime,
@@ -297,18 +382,25 @@ class _Tab3State extends State<Tab3> {
                   });
                 },
               ),
-              SizedBox(height: 20),
-
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _allCategories.isNotEmpty ? _showCategorySelectionDialog : null,
+                child: Text(translate(context, 'categories.changeCategories') ?? 'Change Categories'),
+              ),
+              SizedBox(height: 16),
               CupertinoButton.filled(
                 child: Text(translate(context, 'forms.saveChanges') ?? 'Save Changes'),
                 onPressed: _saveCommerce,
               ),
-
               if (widget.entity['accepted'] == true)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: CupertinoButton.filled(
-                    child: Text(widget.entity['active'] ? (translate(context, 'business.deactivateCommerce') ?? 'Deactivate Business') : (translate(context, 'business.activateCommerce') ?? 'Activate Business')),
+                    child: Text(
+                      widget.entity['active']
+                          ? (translate(context, 'business.deactivateCommerce') ?? 'Deactivate Business')
+                          : (translate(context, 'business.activateCommerce') ?? 'Activate Business'),
+                    ),
                     onPressed: () async {
                       final authService = Provider.of<AuthService>(context, listen: false);
                       final token = await authService.getToken();
@@ -334,7 +426,13 @@ class _Tab3State extends State<Tab3> {
     );
   }
 
-  Widget _buildTextFieldWithLabel({required String label, required TextEditingController controller, bool readOnly = false, TextInputType? keyboardType, List<TextInputFormatter>? inputFormatters}) {
+  Widget _buildTextFieldWithLabel({
+    required String label,
+    required TextEditingController controller,
+    bool readOnly = false,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
     return Row(
       children: [
         Expanded(

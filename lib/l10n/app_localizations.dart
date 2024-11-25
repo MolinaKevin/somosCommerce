@@ -41,7 +41,6 @@ class AppLocalizations {
     List<String> keys = key.split('.');
     dynamic value = _getNestedValue(_localizedStrings, keys);
     if (value is String) {
-      print('Translating key: $key, value: $value');
       return value;
     } else {
       print('Translation not found for key: $key');
