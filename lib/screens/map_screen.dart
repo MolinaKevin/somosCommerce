@@ -43,7 +43,6 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
-  // Method to search place by name using Nominatim
   Future<void> _searchPlace(String query) async {
     setState(() {
       _isLoading = true;
@@ -68,7 +67,6 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
-  // Method to update search suggestions using Nominatim
   Future<void> _updateSearchSuggestions(String query) async {
     if (query.isNotEmpty) {
       setState(() {
@@ -148,7 +146,6 @@ class _MapScreenState extends State<MapScreen> {
               size: 40,
             ),
           ),
-          // Floating search box
           Positioned(
             top: 20,
             left: 10,
@@ -232,7 +229,6 @@ class _MapScreenState extends State<MapScreen> {
               ],
             ),
           ),
-          // Zoom controls
           Positioned(
             bottom: 50,
             right: 10,

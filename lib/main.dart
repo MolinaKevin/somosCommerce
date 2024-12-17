@@ -7,7 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'helpers/translations_helper.dart';
 import 'providers/language_provider.dart';
-import 'services/translation_service.dart'; // Importa TranslationService
+import 'services/translation_service.dart';
 
 void main() {
   runApp(
@@ -33,7 +33,6 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _availableLocales = TranslationService().fetchAvailableLocales();
-    // No es necesario llamar a loadLanguage() aquí, ya se llama en el provider
   }
 
   @override
@@ -78,7 +77,6 @@ class _MyAppState extends State<MyApp> {
             },
           );
         } else {
-          // Mientras se cargan los locales, muestra un indicador de carga
           return MaterialApp(
             home: Scaffold(
               body: Center(child: CircularProgressIndicator()),

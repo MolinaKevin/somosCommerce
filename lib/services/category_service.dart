@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class CategoryService {
-  static const String baseUrl = 'http://localhost/api'; // Reemplaza con tu URL de API real
+  static const String baseUrl = 'http://localhost/api';
 
   Future<List<Map<String, dynamic>>> fetchCategories(String token) async {
     final url = Uri.parse('$baseUrl/categories');

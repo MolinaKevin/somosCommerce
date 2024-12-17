@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/translation_service.dart'; // Asegúrate de que la ruta sea correcta
+import '../services/translation_service.dart';
 
 class AppLocalizations {
   final Locale locale;
@@ -21,7 +21,7 @@ class AppLocalizations {
       print('Traducciones cargadas: $_localizedStrings');
     } catch (e) {
       print('Error al cargar las traducciones: $e');
-      _localizedStrings = {}; // Carga un mapa vacío en caso de error
+      _localizedStrings = {};
     }
   }
 

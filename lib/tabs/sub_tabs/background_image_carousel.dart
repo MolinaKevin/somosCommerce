@@ -180,7 +180,7 @@ class _BackgroundImageCarouselState extends State<BackgroundImageCarousel> {
                     widget.onSelectImage(index);
 
                     if (index == widget.currentIndex) {
-                      widget.onImageUploaded(null); // Clear background_image_id if it’s current
+                      widget.onImageUploaded(null);
                     }
                   },
                   child: Container(

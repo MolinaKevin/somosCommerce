@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class CommerceMovementService {
-  static const String baseUrl = 'http://localhost/api'; // Cambia a tu URL de API real
+  static const String baseUrl = 'http://localhost/api';
 
   Future<List<Map<String, dynamic>>> fetchPurchases(String token, int commerceId) async {
     final url = Uri.parse('$baseUrl/user/commerces/$commerceId/purchases');
@@ -13,7 +13,6 @@ class CommerceMovementService {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      // Aquí asumimos que la respuesta tiene una estructura similar a {"data": [...]}
       return List<Map<String, dynamic>>.from(data['data'] ?? []);
     } else {
       print('Error al obtener compras: ${response.statusCode} - ${response.body}');

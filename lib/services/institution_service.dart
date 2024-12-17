@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class InstitutionService {
-  static const String baseUrl = 'http://localhost/api'; // Cambia a tu URL de API real
+  static const String baseUrl = 'http://localhost/api';
 
   Future<Map<String, dynamic>> fetchInstitutions(String token) async {
     final url = Uri.parse('$baseUrl/user/nros');
@@ -36,7 +36,7 @@ class InstitutionService {
       body: jsonEncode(institutionData),
     );
 
-    if (response.statusCode == 201) { // 201 Created
+    if (response.statusCode == 201) {
       return jsonDecode(response.body);
     } else {
       print('Error al crear institucion: ${response.statusCode} - ${response.body}');
@@ -55,7 +55,7 @@ class InstitutionService {
       body: jsonEncode(institutionData),
     );
 
-    if (response.statusCode == 200) { // 200 OK
+    if (response.statusCode == 200) {
       return true;
     } else {
       print('Error al actualizar la institución: ${response.statusCode} - ${response.body}');
@@ -73,7 +73,7 @@ class InstitutionService {
       },
     );
 
-    if (response.statusCode == 200) { // 200 OK
+    if (response.statusCode == 200) {
       return true;
     } else {
       print('Error al desactivar la institución: ${response.statusCode} - ${response.body}');
@@ -91,7 +91,7 @@ class InstitutionService {
       },
     );
 
-    if (response.statusCode == 200) { // 200 OK
+    if (response.statusCode == 200) {
       return true;
     } else {
       print('Error al activar la institución: ${response.statusCode} - ${response.body}');

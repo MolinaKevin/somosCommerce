@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'tabs/tab_1.dart';
 import 'tabs/tab_2.dart';
 import 'tabs/tab_3.dart';
-import '../helpers/translations_helper.dart';  // Importar el helper de traducciones
+import '../helpers/translations_helper.dart';
 
 class EditPage extends StatefulWidget {
   final Map<String, dynamic> entity;

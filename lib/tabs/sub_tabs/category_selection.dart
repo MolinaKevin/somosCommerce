@@ -31,7 +31,6 @@ class _CategorySelectionWidgetState extends State<CategorySelectionWidget> {
       } else {
         _selectedCategoryIds.add(category['id']);
       }
-      // Llamamos al callback para notificar los cambios
       widget.onSelectionChanged(_selectedCategoryIds);
     });
   }

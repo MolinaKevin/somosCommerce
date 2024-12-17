@@ -18,7 +18,6 @@ class AuthService with ChangeNotifier {
   List<Map<String, dynamic>> get commerces => _commerces;
   List<Map<String, dynamic>> get institutions => _institutions;
 
-  // Método para obtener el token de autenticación
   Future<String?> getToken() async {
     return await _secureStorage.read(key: 'auth_token');
   }
@@ -32,7 +31,6 @@ class AuthService with ChangeNotifier {
       notifyListeners();
       print('Auto-login exitoso. Token encontrado.');
 
-      // Después de un auto-login exitoso, obtenemos comercios e instituciones
       await _fetchUserEntities(token);
 
       return true;
@@ -48,17 +46,17 @@ class AuthService with ChangeNotifier {
     _authStatus = AuthStatus.Authenticating;
     notifyListeners();
 
-    // Simula la autenticación - aquí harías la solicitud a tu API
-    await Future.delayed(Duration(seconds: 2)); // Simula un retraso en la autenticación
 
-    // Aquí debes manejar el resultado real de tu API
-    final token = 'dummy_token'; // Este sería el token real devuelto por tu API
+    await Future.delayed(Duration(seconds: 2));
+
+
+    final token = 'dummy_token';
     await _secureStorage.write(key: 'auth_token', value: token);
 
     _authStatus = AuthStatus.Authenticated;
     notifyListeners();
 
-    // Después de un login exitoso, obtenemos comercios e instituciones
+
     await _fetchUserEntities(token);
 
     return true;
@@ -82,7 +80,7 @@ class AuthService with ChangeNotifier {
       final commerceService = CommerceService();
       final institutionService = InstitutionService();
 
-      // Obtener los comercios del usuario
+
       final commerceResponse = await commerceService.fetchCommerces(token);
       if (commerceResponse != null) {
         if (commerceResponse['data'] != null && commerceResponse['data'] is List) {
@@ -95,7 +93,7 @@ class AuthService with ChangeNotifier {
       }
 
 
-      // Obtener las instituciones del usuario
+
       final institutionResponse = await institutionService.fetchInstitutions(token);
       if (institutionResponse != null && institutionResponse['data'] != null && institutionResponse['data'] is List) {
         _institutions = List<Map<String, dynamic>>.from(institutionResponse['data'] as List);

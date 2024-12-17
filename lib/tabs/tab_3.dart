@@ -6,11 +6,13 @@ import 'package:latlong2/latlong.dart';
 import '../services/auth_service.dart';
 import '../services/commerce_service.dart';
 import '../services/category_service.dart';
+import '../services/seal_service.dart';
 import '../screens/map_screen.dart';
 import 'sub_tabs/avatar_section.dart';
 import 'sub_tabs/background_image_carousel.dart';
 import 'sub_tabs/time_picker_section.dart';
-import 'sub_tabs/category_selection.dart'; // Importamos el CategorySelectionWidget
+import 'sub_tabs/category_selection.dart';
+import 'sub_tabs/seal_selection.dart';
 import 'package:flutter/services.dart';
 import '../helpers/translations_helper.dart';
 
@@ -19,6 +21,12 @@ class CategoryNode {
   List<CategoryNode> children;
 
   CategoryNode({required this.category, this.children = const []});
+}
+
+class SealNode {
+  Map<String, dynamic> seal;
+
+  SealNode({required this.seal});
 }
 
 class Tab3 extends StatefulWidget {
@@ -54,7 +62,14 @@ class _Tab3State extends State<Tab3> {
 
   List<CategoryNode> _categoryTree = [];
 
-  List<int>? _updatedSelectedCategoryIds; // Variable para almacenar los IDs actualizados
+  List<int>? _updatedSelectedCategoryIds;
+
+  List<Map<String, dynamic>> _allSeals = [];
+  List<int> _selectedSealIds = [];
+  List<SealNode> _sealTree = [];
+  List<int>? _updatedSelectedSealIds;
+
+  late List<Map<String, dynamic>> _sealsWithState;
 
   @override
   void initState() {
@@ -89,6 +104,12 @@ class _Tab3State extends State<Tab3> {
     } else {
       _selectedCategoryIds = [];
     }
+
+    _selectedSealIds = widget.entity['seal_ids'] != null
+        ? List<int>.from(widget.entity['seal_ids'])
+        : [];
+
+    _sealsWithState = [];
   }
 
   @override
@@ -96,6 +117,98 @@ class _Tab3State extends State<Tab3> {
     super.didChangeDependencies();
     if (_allCategories.isEmpty) {
       _fetchCategories();
+    }
+    if (_allSeals.isEmpty) {
+      _fetchSeals();
+    }
+  }
+  void _initializeSealsWithState() {
+    final existingSeals = {
+      for (var seal in (widget.entity['seals_with_state'] ?? []))
+        seal['id']: seal['state'] ?? 'nada'
+    };
+
+    final serverToLocal = {
+      'full': 'full',
+      'partial': 'partial',
+      'nada': 'none',
+      'none': 'none',
+    };
+
+    _sealsWithState = _allSeals.map((seal) {
+      final currentState = existingSeals[seal['id']] ?? 'nada';
+      final localState = serverToLocal[currentState] ?? 'none';
+
+      return {
+        'id': seal['id'],
+        'name': seal['translated_name'] ?? seal['name'] ?? 'Unnamed Seal',
+        'image': seal['image'],
+        'state': localState,
+      };
+    }).toList();
+  }
+
+  Future<void> _fetchSeals() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final token = await authService.getToken();
+    if (token != null) {
+      final sealService = SealService();
+      final seals = await sealService.fetchSeals(token);
+      setState(() {
+        _allSeals = seals;
+        _initializeSealsWithState();
+      });
+    }
+  }
+
+  Future<void> _saveCommerce() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      final commerceData = {
+        'name': _nameController.text,
+        'address': _addressController.text,
+        'city': _cityController.text,
+        'plz': _plzController.text,
+        'latitude': _latitudeController.text,
+        'longitude': _longitudeController.text,
+        'avatar': _avatarController.text,
+        'background_image': _backgroundImages.isNotEmpty && _currentBackgroundIndex >= 0
+            ? _backgroundImages[_currentBackgroundIndex]
+            : null,
+        'percent': double.tryParse(_percentController.text) ?? 0.0,
+        'opening_time': _openingTime?.format(context),
+        'closing_time': _closingTime?.format(context),
+        'categories': _selectedCategoryIds,
+        'seals': _sealsWithState
+            .where((seal) => seal['state'] != 'nada')
+            .map((seal) => {'id': seal['id'], 'state': seal['state']})
+            .toList(),
+      };
+
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final token = await authService.getToken();
+
+      if (token != null) {
+        final success = await CommerceService().updateCommerce(token, widget.entity['id'], commerceData);
+        if (success) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return CupertinoAlertDialog(
+                title: Text(translate(context, 'business.commerceUpdated') ?? 'Business Updated'),
+                content: Text(translate(context, 'business.commerceUpdatedSuccessfully') ?? 'The business has been successfully updated.'),
+                actions: <Widget>[
+                  CupertinoDialogAction(
+                    child: Text('OK'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      }
     }
   }
 
@@ -195,53 +308,6 @@ class _Tab3State extends State<Tab3> {
     }
   }
 
-  Future<void> _saveCommerce() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      final commerceData = {
-        'name': _nameController.text,
-        'address': _addressController.text,
-        'city': _cityController.text,
-        'plz': _plzController.text,
-        'latitude': _latitudeController.text,
-        'longitude': _longitudeController.text,
-        'avatar': _avatarController.text,
-        'background_image': _backgroundImages.isNotEmpty && _currentBackgroundIndex >= 0
-            ? _backgroundImages[_currentBackgroundIndex]
-            : null,
-        'percent': double.tryParse(_percentController.text) ?? 0.0,
-        'opening_time': _openingTime?.format(context),
-        'closing_time': _closingTime?.format(context),
-        'categories': _selectedCategoryIds,
-      };
-
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final token = await authService.getToken();
-
-      if (token != null) {
-        final success = await CommerceService().updateCommerce(token, widget.entity['id'], commerceData);
-        if (success) {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return CupertinoAlertDialog(
-                title: Text(translate(context, 'business.commerceUpdated') ?? 'Business Updated'),
-                content: Text(translate(context, 'business.commerceUpdatedSuccessfully') ?? 'The business has been successfully updated.'),
-                actions: <Widget>[
-                  CupertinoDialogAction(
-                    child: Text('OK'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
-      }
-    }
-  }
-
   void _showCategorySelectionDialog() {
     showModalBottomSheet(
       context: context,
@@ -271,6 +337,48 @@ class _Tab3State extends State<Tab3> {
     });
   }
 
+  void _showSealSelectionDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          child: SealSelectionWidget(
+            sealsWithState: _sealsWithState,
+            onSealStateChanged: (updatedSeals) {
+              setState(() {
+                _sealsWithState = updatedSeals;
+              });
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _buildSealTree() {
+    Map<int, SealNode> nodesById = {};
+
+    for (var seal in _allSeals) {
+      nodesById[seal['id']] = SealNode(seal: seal);
+    }
+
+    _sealTree = [];
+    for (var seal in _allSeals) {
+      var node = nodesById[seal['id']]!;
+      _sealTree.add(node);
+    }
+  }
+
+  List<Map<String, dynamic>> _sealTreeToList(List<SealNode> nodes) {
+    return nodes.map((node) => _sealNodeToMap(node)).toList();
+  }
+
+
   List<Map<String, dynamic>> _categoryTreeToList(List<CategoryNode> nodes) {
     return nodes.map((node) => _categoryNodeToMap(node)).toList();
   }
@@ -280,6 +388,13 @@ class _Tab3State extends State<Tab3> {
       'id': node.category['id'],
       'name': node.category['translated_name'] ?? node.category['name'],
       'children': node.children.map((child) => _categoryNodeToMap(child)).toList(),
+    };
+  }
+
+  Map<String, dynamic> _sealNodeToMap(SealNode node) {
+    return {
+      'id': node.seal['id'],
+      'name': node.seal['translated_name'] ?? node.seal['name'],
     };
   }
 
@@ -386,6 +501,10 @@ class _Tab3State extends State<Tab3> {
               ElevatedButton(
                 onPressed: _allCategories.isNotEmpty ? _showCategorySelectionDialog : null,
                 child: Text(translate(context, 'categories.changeCategories') ?? 'Change Categories'),
+              ),
+              ElevatedButton(
+                onPressed: _allSeals.isNotEmpty ? _showSealSelectionDialog : null,
+                child: Text(translate(context, 'seals.changeSeals') ?? 'Change Seals'),
               ),
               SizedBox(height: 16),
               CupertinoButton.filled(

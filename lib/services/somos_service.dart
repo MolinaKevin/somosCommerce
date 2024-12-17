@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class SomosService {
-  static const String baseUrl = 'http://localhost/api'; // Cambia a tu URL de API real
+  static const String baseUrl = 'http://localhost/api';
 
   Future<List<Map<String, dynamic>>> fetchSomosOptions(String token) async {
     final url = Uri.parse('$baseUrl/somos');
