@@ -3,16 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:latlong2/latlong.dart';
+
 import '../services/auth_service.dart';
 import '../services/commerce_service.dart';
 import '../services/category_service.dart';
 import '../services/seal_service.dart';
 import '../screens/map_screen.dart';
+
 import 'sub_tabs/avatar_section.dart';
 import 'sub_tabs/background_image_carousel.dart';
 import 'sub_tabs/time_picker_section.dart';
 import 'sub_tabs/category_selection.dart';
 import 'sub_tabs/seal_selection.dart';
+
 import 'package:flutter/services.dart';
 import '../helpers/translations_helper.dart';
 
@@ -25,13 +28,11 @@ class CategoryNode {
 
 class SealNode {
   Map<String, dynamic> seal;
-
   SealNode({required this.seal});
 }
 
 class Tab3 extends StatefulWidget {
   final Map<String, dynamic> entity;
-
   Tab3({required this.entity});
 
   @override
@@ -59,16 +60,15 @@ class _Tab3State extends State<Tab3> {
 
   List<Map<String, dynamic>> _allCategories = [];
   List<int> _selectedCategoryIds = [];
-
   List<CategoryNode> _categoryTree = [];
-
   List<int>? _updatedSelectedCategoryIds;
+
+  int? _mainCategoryId;
 
   List<Map<String, dynamic>> _allSeals = [];
   List<int> _selectedSealIds = [];
   List<SealNode> _sealTree = [];
   List<int>? _updatedSelectedSealIds;
-
   late List<Map<String, dynamic>> _sealsWithState;
 
   @override
@@ -87,7 +87,6 @@ class _Tab3State extends State<Tab3> {
     if (widget.entity['background_image'] != null) {
       _backgroundImages.add(widget.entity['background_image']);
     }
-
     if (widget.entity['fotos_urls'] != null && widget.entity['fotos_urls'].isNotEmpty) {
       _backgroundImages.addAll(List<String>.from(widget.entity['fotos_urls']));
     }
@@ -105,16 +104,20 @@ class _Tab3State extends State<Tab3> {
       _selectedCategoryIds = [];
     }
 
+    if (widget.entity['main_category_id'] != null) {
+      _mainCategoryId = widget.entity['main_category_id'] as int;
+    }
+
     _selectedSealIds = widget.entity['seal_ids'] != null
         ? List<int>.from(widget.entity['seal_ids'])
         : [];
-
     _sealsWithState = [];
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
     if (_allCategories.isEmpty) {
       _fetchCategories();
     }
@@ -122,6 +125,7 @@ class _Tab3State extends State<Tab3> {
       _fetchSeals();
     }
   }
+
   void _initializeSealsWithState() {
     final existingSeals = {
       for (var seal in (widget.entity['seals_with_state'] ?? []))
@@ -178,6 +182,7 @@ class _Tab3State extends State<Tab3> {
         'opening_time': _openingTime?.format(context),
         'closing_time': _closingTime?.format(context),
         'categories': _selectedCategoryIds,
+        'main_category_id': _mainCategoryId,
         'seals': _sealsWithState
             .where((seal) => seal['state'] != 'nada')
             .map((seal) => {'id': seal['id'], 'state': seal['state']})
@@ -188,14 +193,20 @@ class _Tab3State extends State<Tab3> {
       final token = await authService.getToken();
 
       if (token != null) {
-        final success = await CommerceService().updateCommerce(token, widget.entity['id'], commerceData);
+        final success = await CommerceService().updateCommerce(
+          token,
+          widget.entity['id'],
+          commerceData,
+        );
         if (success) {
           showDialog(
             context: context,
             builder: (context) {
               return CupertinoAlertDialog(
                 title: Text(translate(context, 'business.commerceUpdated') ?? 'Business Updated'),
-                content: Text(translate(context, 'business.commerceUpdatedSuccessfully') ?? 'The business has been successfully updated.'),
+                content: Text(
+                  translate(context, 'business.commerceUpdatedSuccessfully') ?? 'The business has been successfully updated.',
+                ),
                 actions: <Widget>[
                   CupertinoDialogAction(
                     child: Text('OK'),
@@ -234,8 +245,8 @@ class _Tab3State extends State<Tab3> {
 
     _categoryTree = [];
     for (var category in _allCategories) {
-      var node = nodesById[category['id']]!;
-      var parentId = category['parent_id'];
+      final node = nodesById[category['id']]!;
+      final parentId = category['parent_id'];
       if (parentId != null && nodesById.containsKey(parentId)) {
         nodesById[parentId]!.children.add(node);
       } else {
@@ -262,7 +273,7 @@ class _Tab3State extends State<Tab3> {
   }
 
   Future<void> _enterAvatarUrl() async {
-    TextEditingController urlController = TextEditingController();
+    final urlController = TextEditingController();
     await showDialog(
       context: context,
       builder: (context) {
@@ -360,25 +371,6 @@ class _Tab3State extends State<Tab3> {
     );
   }
 
-  void _buildSealTree() {
-    Map<int, SealNode> nodesById = {};
-
-    for (var seal in _allSeals) {
-      nodesById[seal['id']] = SealNode(seal: seal);
-    }
-
-    _sealTree = [];
-    for (var seal in _allSeals) {
-      var node = nodesById[seal['id']]!;
-      _sealTree.add(node);
-    }
-  }
-
-  List<Map<String, dynamic>> _sealTreeToList(List<SealNode> nodes) {
-    return nodes.map((node) => _sealNodeToMap(node)).toList();
-  }
-
-
   List<Map<String, dynamic>> _categoryTreeToList(List<CategoryNode> nodes) {
     return nodes.map((node) => _categoryNodeToMap(node)).toList();
   }
@@ -391,11 +383,65 @@ class _Tab3State extends State<Tab3> {
     };
   }
 
+  List<Map<String, dynamic>> _sealTreeToList(List<SealNode> nodes) {
+    return nodes.map((node) => _sealNodeToMap(node)).toList();
+  }
+
   Map<String, dynamic> _sealNodeToMap(SealNode node) {
     return {
       'id': node.seal['id'],
       'name': node.seal['translated_name'] ?? node.seal['name'],
     };
+  }
+
+  String _lookupCategoryName(int categoryId) {
+    final cat = _allCategories.firstWhere(
+          (c) => c['id'] == categoryId,
+      orElse: () => <String, dynamic>{},
+    );
+    if (cat.isEmpty) return 'Unknown';
+    return cat['translated_name'] ?? cat['name'] ?? 'Unknown';
+  }
+
+  Widget _buildMainCategoryDropdown() {
+    final List<int> possibleIds = [..._selectedCategoryIds];
+
+    if (possibleIds.isEmpty) {
+      return Container();
+    }
+
+    return Row(
+      children: [
+        Expanded(
+          flex: 3,
+          child: Text(
+            'Main Category:',
+            style: TextStyle(fontSize: 14),
+          ),
+        ),
+        Expanded(
+          flex: 7,
+          child: Material(
+            child: DropdownButton<int>(
+              isExpanded: true,
+              value: _mainCategoryId,
+              hint: Text('Select main category'),
+              onChanged: (int? newValue) {
+                setState(() {
+                  _mainCategoryId = newValue;
+                });
+              },
+              items: possibleIds.map((catId) {
+                return DropdownMenuItem<int>(
+                  value: catId,
+                  child: Text(_lookupCategoryName(catId)),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -416,12 +462,25 @@ class _Tab3State extends State<Tab3> {
                 onEnterAvatarUrl: _enterAvatarUrl,
               ),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: translate(context, 'entity_fields.name') ?? 'Name:', controller: _nameController),
+
+              _buildTextFieldWithLabel(
+                label: translate(context, 'entity_fields.name') ?? 'Name:',
+                controller: _nameController,
+              ),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: translate(context, 'entity_fields.address') ?? 'Address:', controller: _addressController),
+
+              _buildTextFieldWithLabel(
+                label: translate(context, 'entity_fields.address') ?? 'Address:',
+                controller: _addressController,
+              ),
               SizedBox(height: 16),
-              _buildTextFieldWithLabel(label: translate(context, 'entity_fields.city') ?? 'City:', controller: _cityController),
+
+              _buildTextFieldWithLabel(
+                label: translate(context, 'entity_fields.city') ?? 'City:',
+                controller: _cityController,
+              ),
               SizedBox(height: 16),
+
               _buildTextFieldWithLabel(
                 label: translate(context, 'entity_fields.plz') ?? 'PLZ:',
                 controller: _plzController,
@@ -429,6 +488,7 @@ class _Tab3State extends State<Tab3> {
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
               SizedBox(height: 16),
+
               Row(
                 children: [
                   Expanded(
@@ -456,6 +516,7 @@ class _Tab3State extends State<Tab3> {
                 ],
               ),
               SizedBox(height: 16),
+
               BackgroundImageCarousel(
                 backgroundImages: _backgroundImages,
                 currentIndex: _currentBackgroundIndex,
@@ -477,12 +538,14 @@ class _Tab3State extends State<Tab3> {
                 },
               ),
               SizedBox(height: 16),
+
               _buildTextFieldWithLabel(
                 label: translate(context, 'entity_fields.percent') ?? 'Percent:',
                 controller: _percentController,
                 readOnly: true,
               ),
               SizedBox(height: 16),
+
               TimePickerSection(
                 openingTime: _openingTime,
                 closingTime: _closingTime,
@@ -498,19 +561,26 @@ class _Tab3State extends State<Tab3> {
                 },
               ),
               SizedBox(height: 16),
+
               ElevatedButton(
                 onPressed: _allCategories.isNotEmpty ? _showCategorySelectionDialog : null,
                 child: Text(translate(context, 'categories.changeCategories') ?? 'Change Categories'),
               ),
+
+              _buildMainCategoryDropdown(),
+              SizedBox(height: 8),
+
               ElevatedButton(
                 onPressed: _allSeals.isNotEmpty ? _showSealSelectionDialog : null,
                 child: Text(translate(context, 'seals.changeSeals') ?? 'Change Seals'),
               ),
               SizedBox(height: 16),
+
               CupertinoButton.filled(
                 child: Text(translate(context, 'forms.saveChanges') ?? 'Save Changes'),
                 onPressed: _saveCommerce,
               ),
+
               if (widget.entity['accepted'] == true)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
