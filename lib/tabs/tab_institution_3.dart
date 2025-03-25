@@ -267,7 +267,7 @@ class _TabInstitution3State extends State<TabInstitution3> {
           child: ListView(
             children: [
               AvatarSection(
-                avatarController: _avatarController,
+                avatarUrl: widget.entity['avatar_url'] ?? '',
                 onPickImage: _pickImage,
                 onEnterAvatarUrl: _enterAvatarUrl,
               ),

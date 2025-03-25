@@ -179,7 +179,7 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
                         _isTileExpanded[index] = expanded;
                       });
                     },
-                    leading: Image.network(
+                    leading: Image.asset(
                       item['avatar_url'] ?? '',
                       width: 50,
                       height: 50,

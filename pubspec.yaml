@@ -50,6 +50,8 @@ dependencies:
   flutter_svg: ^1.0.3
 
 dev_dependencies:
+  mockito: ^5.0.10
+  build_runner: ^2.1.2
   flutter_test:
     sdk: flutter
 
@@ -70,6 +72,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - lib/mocking/lang/
+    - lib/mocking/images/
   #assets:
 
   # To add assets to your application, add an assets section, like this:

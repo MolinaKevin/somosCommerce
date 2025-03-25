@@ -5,9 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../services/auth_service.dart';
-import '../services/commerce_service.dart';
-import '../services/category_service.dart';
-import '../services/seal_service.dart';
 import '../screens/map_screen.dart';
 
 import 'sub_tabs/avatar_section.dart';
@@ -18,6 +15,10 @@ import 'sub_tabs/seal_selection.dart';
 
 import 'package:flutter/services.dart';
 import '../helpers/translations_helper.dart';
+
+import '../mocking/mock_category_service.dart';
+import '../mocking/mock_commerce_service.dart';
+import '../mocking/mock_seal_service.dart';
 
 class CategoryNode {
   Map<String, dynamic> category;
@@ -156,8 +157,8 @@ class _Tab3State extends State<Tab3> {
     final authService = Provider.of<AuthService>(context, listen: false);
     final token = await authService.getToken();
     if (token != null) {
-      final sealService = SealService();
-      final seals = await sealService.fetchSeals(token);
+      final sealService = MockSealService();
+      final seals = await sealService.fetchSeals();
       setState(() {
         _allSeals = seals;
         _initializeSealsWithState();
@@ -189,16 +190,9 @@ class _Tab3State extends State<Tab3> {
             .toList(),
       };
 
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final token = await authService.getToken();
-
-      if (token != null) {
-        final success = await CommerceService().updateCommerce(
-          token,
-          widget.entity['id'],
-          commerceData,
-        );
-        if (success) {
+        setState(() {
+          widget.entity.addAll(commerceData);
+        });
           showDialog(
             context: context,
             builder: (context) {
@@ -218,8 +212,6 @@ class _Tab3State extends State<Tab3> {
               );
             },
           );
-        }
-      }
     }
   }
 
@@ -227,8 +219,8 @@ class _Tab3State extends State<Tab3> {
     final authService = Provider.of<AuthService>(context, listen: false);
     final token = await authService.getToken();
     if (token != null) {
-      final categoryService = CategoryService();
-      final categories = await categoryService.fetchCategories(token);
+      final categoryService = MockCategoryService();
+      final categories = await categoryService.fetchCategories();
       setState(() {
         _allCategories = categories;
         _buildCategoryTree();
@@ -457,7 +449,7 @@ class _Tab3State extends State<Tab3> {
           child: ListView(
             children: [
               AvatarSection(
-                avatarController: _avatarController,
+                avatarUrl: widget.entity['avatar_url'] ?? '',
                 onPickImage: _pickImage,
                 onEnterAvatarUrl: _enterAvatarUrl,
               ),
@@ -596,8 +588,8 @@ class _Tab3State extends State<Tab3> {
 
                       if (token != null) {
                         final success = widget.entity['active']
-                            ? await CommerceService().deactivateCommerce(token, widget.entity['id'])
-                            : await CommerceService().activateCommerce(token, widget.entity['id']);
+                            ? await MockCommerceService().deactivateCommerce(token, widget.entity['id'])
+                            : await MockCommerceService().activateCommerce(token, widget.entity['id']);
 
                         if (success) {
                           setState(() {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../services/commerce_movement_service.dart';
+import 'package:provider/provider.dart';
+import '../mocking/mock_commerce_movement_service.dart';
 import '../services/auth_service.dart';
 import '../helpers/translations_helper.dart';
 
@@ -17,22 +18,24 @@ class _Tab2State extends State<Tab2> {
   String selectedFilter = 'all';
   List<Map<String, dynamic>> movements = [];
   bool isLoading = true;
+  late MockCommerceMovementService movementService;
 
   @override
   void initState() {
     super.initState();
+    movementService = MockCommerceMovementService();
     _loadMovements();
   }
 
   Future<void> _loadMovements() async {
     try {
-      final authService = AuthService();
+      final authService = Provider.of<AuthService>(context, listen: false);
       final token = await authService.getToken();
 
       if (token != null) {
-        final purchases = await CommerceMovementService().fetchPurchases(token, widget.entity['id']);
-        final donations = await CommerceMovementService().fetchDonations(token, widget.entity['id']);
-        final cashouts = await CommerceMovementService().fetchCashouts(token, widget.entity['id']);
+        final purchases = await movementService.fetchPurchases(token, widget.entity['id']);
+        final donations = await movementService.fetchDonations(token, widget.entity['id']);
+        final cashouts = await movementService.fetchCashouts(token, widget.entity['id']);
 
         setState(() {
           movements = [

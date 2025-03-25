@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import '../../helpers/translations_helper.dart';
 
 class AvatarSection extends StatelessWidget {
-  final TextEditingController avatarController;
+  final String avatarUrl;
   final Function onPickImage;
   final Function onEnterAvatarUrl;
 
   AvatarSection({
-    required this.avatarController,
+    required this.avatarUrl,
     required this.onPickImage,
     required this.onEnterAvatarUrl,
   });
@@ -19,11 +19,33 @@ class AvatarSection extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 50,
-          backgroundImage: NetworkImage(avatarController.text),
-          onBackgroundImageError: (_, __) {
-            print('Error loading avatar image');
-          },
+          backgroundColor: Colors.grey.shade200,
+          child: avatarUrl.isNotEmpty
+              ? ClipOval(
+            child: Image.network(
+              avatarUrl,
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  'lib/mocking/images/test.png',
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.cover,
+                );
+              },
+            ),
+          )
+              : Image.asset(
+            'lib/mocking/images/test.png',
+            width: 100,
+            height: 100,
+            fit: BoxFit.cover,
+          ),
         ),
+
+
         SizedBox(height: 8),
         CupertinoButton.filled(
           child: Text(translate(context, 'avatar.changeAvatar') ?? 'Change Avatar'),

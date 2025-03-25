@@ -74,18 +74,18 @@ class _SealSelectionWidgetState extends State<SealSelectionWidget> {
 
               String? imagePath = seal['image'] as String?;
               if (imagePath == null) {
-                imagePath = 'seals/default/::STATE::.svg';
+                imagePath = '::STATE::.svg';
               }
 
               imagePath = imagePath.replaceAll('::STATE::', seal['state']);
-              final imageUrl = 'http://localhost/storage/$imagePath';
+              final imageUrl = 'lib/mocking/images/$imagePath';
 
               print('URL de la imagen del sello: $imageUrl');
 
               return Column(
                 children: [
                   ListTile(
-                    leading: SvgPicture.network(
+                    leading: SvgPicture.asset(
                       imageUrl,
                       width: 50,
                       height: 50,

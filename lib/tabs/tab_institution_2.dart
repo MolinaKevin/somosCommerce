@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../services/institution_movement_service.dart';
 import '../services/auth_service.dart';
 import '../helpers/translations_helper.dart';
@@ -26,7 +27,7 @@ class _TabInstitution2State extends State<TabInstitution2> {
 
   Future<void> _loadMovements() async {
     try {
-      final authService = AuthService();
+      final authService = Provider.of<AuthService>(context, listen: false);
       final token = await authService.getToken();
 
       if (token != null) {

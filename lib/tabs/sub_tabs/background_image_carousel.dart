@@ -192,7 +192,7 @@ class _BackgroundImageCarouselState extends State<BackgroundImageCarousel> {
                         width: 3,
                       ),
                     ),
-                    child: Image.network(
+                    child: Image.asset(
                       imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {

@@ -5,16 +5,30 @@ import 'services/auth_service.dart';
 import 'screens/business_institution_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
-import 'helpers/translations_helper.dart';
 import 'providers/language_provider.dart';
 import 'services/translation_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'mocking/mock_commerce_service.dart';
+import 'mocking/mock_institution_service.dart';
 
 void main() {
+  final secureStorage = FlutterSecureStorage();
+  final commerceService = MockCommerceService();
+  final institutionService = MockInstitutionService();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthService()),
-        ChangeNotifierProvider(create: (_) => LanguageProvider()..loadLanguage()),
+        ChangeNotifierProvider(
+          create: (_) => AuthService(
+            secureStorage: secureStorage,
+            commerceService: commerceService,
+            institutionService: institutionService,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => LanguageProvider()..loadLanguage(),
+        ),
       ],
       child: MyApp(),
     ),
