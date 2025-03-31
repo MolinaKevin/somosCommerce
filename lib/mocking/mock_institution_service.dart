@@ -2,21 +2,33 @@ import 'dart:convert';
 
 class MockInstitutionService {
   Future<Map<String, dynamic>> fetchInstitutions(String token) async {
-    // Simular un retraso para imitar una llamada de red
     await Future.delayed(Duration(seconds: 1));
 
-    // Datos de prueba que imitan la estructura de la respuesta real
     final mockResponse = {
       'data': [
         {
           'id': 1,
           'name': 'Institución de Prueba 1',
           'description': 'Descripción de la Institución de Prueba 1',
+          "address": "Beispiel Adr. 115",
+          "city": "Berlin",
+          "plz": "10115",
+          "latitude": "52.5200",
+          "longitude": "13.4050",
+          "avatar_url": "lib/mocking/images/test.png",
+          "background_image": "lib/mocking/images/bg1.jpg",
         },
         {
           'id': 2,
           'name': 'Institución de Prueba 2',
           'description': 'Descripción de la Institución de Prueba 2',
+          "address": "Beispiel Adr. 115",
+          "city": "Berlin",
+          "plz": "10115",
+          "latitude": "52.5200",
+          "longitude": "13.4050",
+          "avatar_url": "lib/mocking/images/test.png",
+          "background_image": "lib/mocking/images/bg1.jpg",
         },
       ],
     };

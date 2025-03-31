@@ -1,6 +1,6 @@
 class MockCommerceMovementService {
   Future<List<Map<String, dynamic>>> fetchPurchases(String token, int commerceId) async {
-    await Future.delayed(Duration(milliseconds: 500)); // Simula tiempo de respuesta
+    await Future.delayed(Duration(milliseconds: 500));
     return [
       {
         "id": 1,

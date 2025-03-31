@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../services/institution_movement_service.dart';
+import '../mocking/mock_institution_movement_service.dart';
 import '../services/auth_service.dart';
 import '../helpers/translations_helper.dart';
 
@@ -31,8 +31,10 @@ class _TabInstitution2State extends State<TabInstitution2> {
       final token = await authService.getToken();
 
       if (token != null) {
-        final donationsReceived = await InstitutionMovementService().fetchDonations(token, widget.entity['id']);
-        final contributionsMade = await InstitutionMovementService().fetchContributions(token, widget.entity['id']);
+        final movementService = MockInstitutionMovementService();
+        final donationsReceived = await movementService.fetchDonations(token, widget.entity['id']);
+        final contributionsMade = await movementService.fetchContributions(token, widget.entity['id']);
+
 
         setState(() {
           movements = [

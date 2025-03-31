@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import '../services/auth_service.dart';
 import '../services/institution_service.dart';
-import '../services/somos_service.dart';
+import '../mocking/mock_somos_service.dart';
 import '../screens/map_screen.dart';
 import 'sub_tabs/avatar_section.dart';
 import 'sub_tabs/background_image_carousel.dart';
@@ -70,7 +70,7 @@ class _TabInstitution3State extends State<TabInstitution3> {
     final token = await authService.getToken();
 
     if (token != null) {
-      final somosService = SomosService();
+      final somosService = MockSomosService();
       final options = await somosService.fetchSomosOptions(token);
 
       setState(() {

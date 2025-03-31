@@ -75,15 +75,13 @@ class MockCommerceService implements CommerceService {
 
   @override
   Future<bool> deactivateCommerce(String token, int commerceId) async {
-    // Simulando la desactivación de un comercio
-    await Future.delayed(Duration(seconds: 1)); // Simula el tiempo de respuesta
-    return true; // Suponemos que la desactivación siempre es exitosa en el mock
+    await Future.delayed(Duration(seconds: 1));
+    return true;
   }
 
   @override
   Future<bool> updateCommerce(String token, int commerceId, Map<String, dynamic> commerceData) async {
-    // Simulando la actualización de un comercio
-    await Future.delayed(Duration(seconds: 1)); // Simula el tiempo de respuesta
-    return true; // Suponemos que la actualización siempre es exitosa en el mock
+    await Future.delayed(Duration(seconds: 1));
+    return true;
   }
 }
