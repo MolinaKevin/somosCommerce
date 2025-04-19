@@ -17,18 +17,32 @@ class TimePickerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textStyle = TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      color: Colors.black87,
+    );
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              openingTime != null
-                  ? '${translate(context, 'time.openingTime') ?? 'Opening Time'}: ${openingTime!.format(context)}'
-                  : translate(context, 'time.selectOpeningTime') ?? 'Select Opening Time',
+            Flexible(
+              child: Text(
+                openingTime != null
+                    ? '${translate(context, 'time.openingTime') ?? 'Opening Time'}: ${openingTime!.format(context)}'
+                    : translate(context, 'time.selectOpeningTime') ?? 'Select Opening Time',
+                style: textStyle,
+              ),
             ),
             CupertinoButton(
-              child: Text(translate(context, 'time.choose') ?? 'Choose'),
+              padding: EdgeInsets.zero,
+              child: Text(
+                translate(context, 'time.choose') ?? 'Choose',
+                style: TextStyle(fontSize: 14, color: Colors.indigo),
+              ),
               onPressed: () async {
                 final pickedTime = await showTimePicker(
                   context: context,
@@ -41,16 +55,24 @@ class TimePickerSection extends StatelessWidget {
             ),
           ],
         ),
+        SizedBox(height: 4),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              closingTime != null
-                  ? '${translate(context, 'time.closingTime') ?? 'Closing Time'}: ${closingTime!.format(context)}'
-                  : translate(context, 'time.selectClosingTime') ?? 'Select Closing Time',
+            Flexible(
+              child: Text(
+                closingTime != null
+                    ? '${translate(context, 'time.closingTime') ?? 'Closing Time'}: ${closingTime!.format(context)}'
+                    : translate(context, 'time.selectClosingTime') ?? 'Select Closing Time',
+                style: textStyle,
+              ),
             ),
             CupertinoButton(
-              child: Text(translate(context, 'time.choose') ?? 'Choose'),
+              padding: EdgeInsets.zero,
+              child: Text(
+                translate(context, 'time.choose') ?? 'Choose',
+                style: TextStyle(fontSize: 14, color: Colors.indigo),
+              ),
               onPressed: () async {
                 final pickedTime = await showTimePicker(
                   context: context,
