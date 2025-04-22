@@ -22,7 +22,7 @@ class AvatarSection extends StatelessWidget {
           backgroundColor: Colors.grey.shade200,
           child: avatarUrl.isNotEmpty
               ? ClipOval(
-            child: Image.network(
+            child: Image.asset(
               avatarUrl,
               width: 100,
               height: 100,

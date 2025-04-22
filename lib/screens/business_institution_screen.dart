@@ -1,15 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../services/auth_service.dart';
 import '../services/commerce_service.dart';
-import 'login_screen.dart';
-import '../edit_page.dart';
-import '../edit_institution_page.dart';
-import '../helpers/translations_helper.dart';
-import '../providers/language_provider.dart';
+
 import 'create_commerce_screen.dart';
 import 'create_nro_screen.dart';
+import 'login_screen.dart';
+
+import '../helpers/translations_helper.dart';
+import '../providers/language_provider.dart';
+
+import '../widgets/entity_actions_popup.dart';
+import '../edit_page.dart';
+import '../edit_institution_page.dart';
 
 class BusinessInstitutionScreen extends StatefulWidget {
   @override
@@ -31,71 +36,88 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
     }
   }
 
-  void _showActionsPopup(Map<String, dynamic> item, bool isActive) {
-    showCupertinoModalPopup(
-      context: context,
-      builder: (context) => CupertinoActionSheet(
-        title: Text(item['name'] ?? ''),
-        actions: [
-          CupertinoActionSheetAction(
-            child: Text(translate(context, 'forms.edit') ?? 'Edit'),
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.of(context).push(CupertinoPageRoute(
-                builder: (context) => _selectedSegment == 0
-                    ? EditPage(entity: item)
-                    : EditInstitutionPage(entity: item),
-              ));
-            },
-          ),
-          CupertinoActionSheetAction(
-            child: Text(isActive
-                ? (translate(context, 'forms.deactivate') ?? 'Deactivate')
-                : (translate(context, 'forms.activate') ?? 'Activate')),
-            onPressed: () async {
-              Navigator.pop(context);
-              final token = await Provider.of<AuthService>(context, listen: false).getToken();
-              final commerceService = CommerceService();
-              final commerceId = item['id'] as int;
-
-              bool success = isActive
-                  ? await commerceService.deactivateCommerce(token!, commerceId)
-                  : await commerceService.activateCommerce(token!, commerceId);
-
-              if (success) {
-                setState(() => item['active'] = !isActive);
-              }
-            },
-          ),
-          CupertinoActionSheetAction(
-            isDestructiveAction: true,
-            child: Text(translate(context, 'forms.delete') ?? 'Delete'),
-            onPressed: () {
-              Navigator.pop(context);
-              print('${translate(context, 'forms.deleting')} ${item['name']}');
-            },
-          ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          child: Text(translate(context, 'forms.cancel') ?? 'Cancel'),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final authService = Provider.of<AuthService>(context);
     final languageProvider = Provider.of<LanguageProvider>(context);
 
-    List<Map<String, dynamic>> _currentList =
+    final List<Map<String, dynamic>> _currentList =
     _selectedSegment == 0 ? authService.commerces : authService.institutions;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(translate(context, 'entity.myEntities') ?? 'My Entities'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue),
+              child: Text(
+                translate(context, 'entity.menu') ?? 'Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.business),
+              title: Text(
+                translate(context, 'entity.businessAndInstitutions') ??
+                    'Businesses and Institutions',
+              ),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text(translate(context, 'auth.logout') ?? 'Logout'),
+              onTap: () async {
+                await authService.logout();
+                Navigator.of(context).pushReplacement(
+                  CupertinoPageRoute(builder: (_) => LoginScreen()),
+                );
+              },
+            ),
+            Divider(),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(translate(context, 'language.selectLanguage') ?? 'Select Language'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButton<String>(
+                          value: _tempSelectedLanguage ?? languageProvider.currentLanguage,
+                          onChanged: (newLanguage) {
+                            setState(() {
+                              _tempSelectedLanguage = newLanguage;
+                            });
+                          },
+                          items: ['es', 'en', 'de'].map((code) {
+                            return DropdownMenuItem(
+                              value: code,
+                              child: Text(
+                                translate(context, 'languages.$code') ??
+                                    code.toUpperCase(),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: _confirmLanguageChange,
+                        child: Text(translate(context, 'forms.confirm') ?? 'Confirm'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
@@ -117,40 +139,62 @@ class _BusinessInstitutionScreenState extends State<BusinessInstitutionScreen>
               itemCount: _currentList.length,
               itemBuilder: (context, index) {
                 final item = _currentList[index];
-                final bool isActive = item['active'] ?? true;
+                final isActive = item['active'] ?? true;
 
-                return ListTile(
-                  leading: Image.asset(
-                    item['avatar_url'] ?? '',
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
+                return Card(
+                  color: isActive ? Colors.white : Colors.grey[300],
+                  child: ListTile(
+                    leading: Image.asset(
+                      item['avatar_url'] ?? '',
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                    ),
+                    title: Text(item['name'] ?? ''),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${translate(context, 'entity_fields.address') ?? 'Address'}: ${item['address'] ?? ''}',
+                        ),
+                        Text(
+                          '${translate(context, 'entity_fields.phone') ?? 'Phone'}: ${item['phone'] ?? ''}',
+                        ),
+                      ],
+                    ),
+                    trailing: Icon(Icons.more_vert),
+                    onTap: () {
+                      showEntityActionsPopup(
+                        context: context,
+                        item: item,
+                        isBusiness: _selectedSegment == 0,
+                        refresh: () => setState(() {}),
+                      );
+                    },
                   ),
-                  title: Text(item['name'] ?? ''),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${translate(context, 'entity_fields.address') ?? 'Address'}: ${item['address']}'),
-                      Text('${translate(context, 'entity_fields.phone') ?? 'Phone'}: ${item['phone']}'),
-                    ],
-                  ),
-                  trailing: Icon(Icons.more_horiz),
-                  onTap: () => _showActionsPopup(item, isActive),
                 );
               },
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16.0),
             child: CupertinoButton.filled(
-              onPressed: () => Navigator.of(context).push(CupertinoPageRoute(
-                builder: (context) => _selectedSegment == 0
-                    ? CreateCommerceScreen()
-                    : CreateInstitutionScreen(),
-              )),
-              child: Text(_selectedSegment == 0
-                  ? translate(context, 'business.createNewBusiness') ?? 'Create new business'
-                  : translate(context, 'institution.createNewInstitution') ?? 'Create new institution'),
+              onPressed: () {
+                Navigator.of(context).push(
+                  CupertinoPageRoute(
+                    builder: (_) => _selectedSegment == 0
+                        ? CreateCommerceScreen()
+                        : CreateInstitutionScreen(),
+                  ),
+                );
+              },
+              child: Text(
+                _selectedSegment == 0
+                    ? translate(context, 'business.createNewBusiness') ??
+                    'Create new business'
+                    : translate(context, 'institution.createNewInstitution') ??
+                    'Create new institution',
+              ),
             ),
           ),
         ],

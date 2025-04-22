@@ -1,16 +1,46 @@
-import 'dart:convert';
-
 class MockSealService {
-  Future<List<Map<String, dynamic>>> fetchSeals() async {
-    const mockResponse = '''
-    [
-      {"id": 1, "name": "Eco-friendly"},
-      {"id": 2, "name": "Fair Trade"},
-      {"id": 3, "name": "Organic"}
-    ]
-    ''';
+  List<Map<String, dynamic>>? _cachedSeals;
 
-    await Future.delayed(Duration(seconds: 1));
-    return List<Map<String, dynamic>>.from(json.decode(mockResponse));
+  Future<List<Map<String, dynamic>>> fetchSeals({bool forceRefresh = false}) async {
+    if (_cachedSeals != null && !forceRefresh) {
+      print('Using cached seals');
+      return _cachedSeals!;
+    }
+
+    _cachedSeals = [
+      {
+        'id': 1,
+        'name': 'Vegano',
+        'slug': 'vegano',
+        'image': 'lib/mocking/images/seal_vegan/seal_vegan_::STATE::.svg',
+      },
+      {
+        'id': 2,
+        'name': 'Orgánico',
+        'slug': 'organico',
+        'image': 'lib/mocking/images/seal_organic/seal_organic_::STATE::.svg',
+      },
+      {
+        'id': 3,
+        'name': 'Comercio Justo',
+        'slug': 'comercio-justo',
+        'image': 'lib/mocking/images/seal_regional/::STATE::.svg',
+      },
+      {
+        'id': 4,
+        'name': 'Sin TACC',
+        'slug': 'sin-tacc',
+        'image': 'lib/mocking/images/seal_regional/::STATE::.svg',
+      },
+      {
+        'id': 5,
+        'name': 'Libre de Plástico',
+        'slug': 'libre-plastico',
+        'image': 'lib/mocking/images/seal_plastic/seal_plastic_::STATE::.svg',
+      },
+    ];
+
+    print('Mocked seals loaded: $_cachedSeals');
+    return _cachedSeals!;
   }
 }
