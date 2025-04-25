@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../widgets/popup_info_card.dart';
-import '../services/seal_service.dart';
+import '../mocking/mock_seal_service.dart';
 import '../services/auth_service.dart';
 import 'package:provider/provider.dart';
 
@@ -31,12 +31,23 @@ class _EntityPreviewScreenState extends State<EntityPreviewScreen> {
     final authService = Provider.of<AuthService>(context, listen: false);
     final token = await authService.getToken();
 
+    final enrichedEntity = {
+      ...widget.entity,
+      'seals_with_state': [
+        {'id': 1, 'state': 'partial'},
+        {'id': 2, 'state': 'full'},
+        {'id': 3, 'state': 'none'},
+      ],
+    };
+
+
     if (token != null) {
-      final seals = await SealService().fetchSeals(token);
+      print('Contenido de entity al pasar al popup: ${widget.entity}');
+      final seals = await MockSealService().fetchSeals();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         InfoCardPopup.show(
           context: context,
-          data: widget.entity,
+          data: enrichedEntity,
           translations: {},
           allSeals: seals,
           onDismiss: () => Navigator.of(context).pop(),

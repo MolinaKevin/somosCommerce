@@ -11,7 +11,9 @@ class InfoCardPopup {
     required VoidCallback onDismiss,
   }) {
     final sealsWithStateData = data['seals_with_state'];
-    final hasSeals = sealsWithStateData != null && (sealsWithStateData as List).isNotEmpty;
+
+    final hasSeals = sealsWithStateData != null && sealsWithStateData is List && sealsWithStateData.isNotEmpty;
+    print('[InfoCardPopup] Seals with state: $sealsWithStateData');
 
     showGeneralDialog(
       context: context,
@@ -74,7 +76,7 @@ class InfoCardPopup {
                             ),
                           ],
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                           child: Row(
@@ -114,7 +116,6 @@ class InfoCardPopup {
                                   ],
                                 ),
                               ),
-                              // Seals
                               if (hasSeals)
                                 Container(
                                   margin: const EdgeInsets.only(left: 8.0),
@@ -123,17 +124,25 @@ class InfoCardPopup {
                                         .where((seal) =>
                                     seal['state'] == 'partial' || seal['state'] == 'full')
                                         .map((sealState) {
-                                      final combined = allSeals.firstWhere(
-                                            (s) => s['id'] == sealState['id'],
-                                        orElse: () => {},
+                                      final sealId = sealState['id'];
+                                      final state = sealState['state'];
+
+                                      final matched = allSeals.firstWhere(
+                                            (s) => s['id'] == sealId,
+                                        orElse: () {
+                                          print('[InfoCardPopup] No seal found with id $sealId');
+                                          return {};
+                                        },
                                       );
 
-                                      if (combined.isEmpty) return SizedBox.shrink();
+                                      if (matched.isEmpty) return SizedBox.shrink();
 
                                       final completeSeal = {
-                                        ...combined,
-                                        'state': sealState['state'],
+                                        ...matched,
+                                        'state': state,
                                       };
+
+                                      print('[InfoCardPopup] Passing seal to widget: $completeSeal');
 
                                       return Padding(
                                         padding: const EdgeInsets.symmetric(horizontal: 4),

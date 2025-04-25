@@ -75,6 +75,10 @@ flutter:
   assets:
     - lib/mocking/lang/
     - lib/mocking/images/
+    - lib/mocking/images/seal_organic/
+    - lib/mocking/images/seal_plastic/
+    - lib/mocking/images/seal_vegan/
+    - lib/mocking/images/seal_regional/
   #assets:
 
   # To add assets to your application, add an assets section, like this:

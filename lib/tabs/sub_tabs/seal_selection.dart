@@ -78,9 +78,7 @@ class _SealSelectionWidgetState extends State<SealSelectionWidget> {
               }
 
               imagePath = imagePath.replaceAll('::STATE::', seal['state']);
-              final imageUrl = 'lib/mocking/images/$imagePath';
-
-              print('URL de la imagen del sello: $imageUrl');
+              final imageUrl = '$imagePath';
 
               return Column(
                 children: [

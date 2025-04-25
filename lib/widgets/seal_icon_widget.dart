@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
-import '../services/seal_service.dart';
+import '../mocking/mock_seal_service.dart';
 
 class SealIconWidget extends StatefulWidget {
   final Map<String, dynamic> seal;
@@ -49,8 +49,8 @@ class _SealIconWidgetState extends State<SealIconWidget> {
         return;
       }
 
-      final sealService = SealService();
-      final seals = await sealService.fetchSeals(token);
+      final sealService = MockSealService();
+      final seals = await sealService.fetchSeals();
 
       final seal = seals.firstWhere(
             (s) => s['id'] == id,
@@ -91,7 +91,7 @@ class _SealIconWidgetState extends State<SealIconWidget> {
       return const Icon(Icons.image_not_supported, size: 50);
     } else {
       return SvgPicture.asset(
-        'http://localhost/storage/$_assetPath',
+        '$_assetPath',
         width: 50,
         height: 50,
         placeholderBuilder: (context) => CircularProgressIndicator(),
